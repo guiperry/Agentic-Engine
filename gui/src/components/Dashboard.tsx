@@ -6,7 +6,6 @@ import {
   Activity,
   ArrowUpRight,
   Clock,
-  Server,
   Target,
   AlertTriangle,
   CheckCircle,
@@ -105,14 +104,10 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const handleAgentCreated = (newAgent: any) => {
+  const handleAgentCreated = () => {
     setIsAgentCreationModalOpen(false);
     // In a real implementation, you would update the state with the new agent
     // and potentially navigate to the agent manager
-    navigate('/agents');
-  };
-
-  const handleNavigateToAgents = () => {
     navigate('/agents');
   };
 
