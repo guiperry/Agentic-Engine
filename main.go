@@ -161,9 +161,24 @@ func serveStaticGUI(port int) error {
 		return fmt.Errorf("GUI dist directory not found: %s. Run 'npm run build' in the gui directory first", guiDistDir)
 	}
 
-	// Serve static files
+	// Create a file server handler for static assets
 	fs := http.FileServer(http.Dir(guiDistDir))
-	http.Handle("/", fs)
+
+	// Create a custom handler to support client-side routing
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		// Check if the requested file exists
+		path := filepath.Join(guiDistDir, r.URL.Path)
+		_, err := os.Stat(path)
+
+		// If the file exists, serve it directly
+		if err == nil {
+			fs.ServeHTTP(w, r)
+			return
+		}
+
+		// For all other routes, serve the index.html file to support client-side routing
+		http.ServeFile(w, r, filepath.Join(guiDistDir, "index.html"))
+	})
 
 	log.Printf("🎨 Serving static GUI on port %d...", port)
 	return http.ListenAndServe(fmt.Sprintf(":%d", port), nil)

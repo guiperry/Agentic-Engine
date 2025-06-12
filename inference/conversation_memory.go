@@ -4,7 +4,7 @@ import (
 	"log"
 	"sync"
 
-	gollm_types "github.com/teilomillet/gollm/types"
+	gollm_types "github.com/guiperry/gollm_cerebras/types"
 )
 
 // ConversationMemory defines the interface for managing conversation history.

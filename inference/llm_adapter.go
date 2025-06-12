@@ -2,7 +2,8 @@ package inference
 
 import (
 	"context"
-	"github.com/teilomillet/gollm/llm"
+
+	"github.com/guiperry/gollm_cerebras/llm"
 )
 
 // LLMAdapter wraps an llm.LLM instance to implement the TextGenerator interface

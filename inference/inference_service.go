@@ -11,9 +11,10 @@ import (
 	"time"
 
 	// Use gollm types for messages if needed here, or keep them internal to delegator
-	"github.com/teilomillet/gollm"
-	"github.com/teilomillet/gollm/config"
-	"github.com/teilomillet/gollm/llm"
+
+	"github.com/guiperry/gollm_cerebras/config"
+	"github.com/guiperry/gollm_cerebras/llm"
+	gollm "github.com/guiperry/gollm_cerebras"
 )
 
 // LLMAttemptConfig defines the configuration for a single LLM attempt.

@@ -5,13 +5,15 @@ import (
 	"context"
 	"errors" // Import the errors package
 	"fmt"
-	"github.com/pkoukk/tiktoken-go"
 	"log"
 	"strings"
 
-	"github.com/teilomillet/gollm" // Import gollm for MOA type
-	"github.com/teilomillet/gollm/llm"
-	gollm_types "github.com/teilomillet/gollm/types" // Renamed import
+	gollm "github.com/guiperry/gollm_cerebras"
+	"github.com/pkoukk/tiktoken-go"
+
+	// Import gollm for MOA type
+	"github.com/guiperry/gollm_cerebras/llm"
+	gollm_types "github.com/guiperry/gollm_cerebras/types" // Renamed import
 	// Add other necessary imports if message conversion or specific types are moved here
 )
 

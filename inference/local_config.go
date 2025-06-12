@@ -1,8 +1,8 @@
 package inference
 
 import (
-	"github.com/teilomillet/gollm/config"
-	"github.com/teilomillet/gollm/providers"
+	"github.com/guiperry/gollm_cerebras/config"
+	"github.com/guiperry/gollm_cerebras/providers"
 )
 
 // ProviderType defines the type of provider (e.g., "openai", "anthropic")

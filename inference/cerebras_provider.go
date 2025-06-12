@@ -17,10 +17,10 @@ import (
 	"sync"
 
 	// Use official gollm imports
-	"github.com/teilomillet/gollm/config" // For SetDefaultOptions
-	"github.com/teilomillet/gollm/providers"
-	gollm_types "github.com/teilomillet/gollm/types" // Renamed import to avoid conflict
-	"github.com/teilomillet/gollm/utils"             // For Logger
+	"github.com/guiperry/gollm_cerebras/config" // For SetDefaultOptions
+	"github.com/guiperry/gollm_cerebras/providers"
+	gollm_types "github.com/guiperry/gollm_cerebras/types" // Renamed import to avoid conflict
+	"github.com/guiperry/gollm_cerebras/utils"             // For Logger
 
 	// Ordered map for JSON schema properties
 	orderedmap "github.com/wk8/go-ordered-map/v2"

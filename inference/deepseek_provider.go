@@ -10,10 +10,10 @@ import (
 	"sync"
 
 	// Use official gollm imports
-	"github.com/teilomillet/gollm/config"
-	"github.com/teilomillet/gollm/providers"
-	gollm_types "github.com/teilomillet/gollm/types"
-	"github.com/teilomillet/gollm/utils"
+	"github.com/guiperry/gollm_cerebras/config"
+	"github.com/guiperry/gollm_cerebras/providers"
+	gollm_types "github.com/guiperry/gollm_cerebras/types"
+	"github.com/guiperry/gollm_cerebras/utils"
 
 	// Import jsonschema for tool parameters and response format
 	"github.com/invopop/jsonschema"
