@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   TrendingUp, 
   Zap, 
@@ -12,8 +12,13 @@ import {
   CheckCircle,
   Loader
 } from 'lucide-react';
+import AgentCreationModal from './modals/AgentCreationModal';
+import { useNavigate } from 'react-router-dom';
 
 export const Dashboard: React.FC = () => {
+  const [isAgentCreationModalOpen, setIsAgentCreationModalOpen] = useState(false);
+  const navigate = useNavigate();
+
   const stats = [
     { label: 'Active Agents', value: '47', change: '+12%', icon: Bot, color: 'from-blue-500 to-cyan-500' },
     { label: 'Target Systems', value: '23', change: '+8%', icon: Target, color: 'from-purple-500 to-pink-500' },
@@ -100,6 +105,29 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const handleAgentCreated = (newAgent: any) => {
+    setIsAgentCreationModalOpen(false);
+    // In a real implementation, you would update the state with the new agent
+    // and potentially navigate to the agent manager
+    navigate('/agents');
+  };
+
+  const handleNavigateToAgents = () => {
+    navigate('/agents');
+  };
+
+  const handleNavigateToTargets = () => {
+    navigate('/targets');
+  };
+
+  const handleNavigateToCapabilities = () => {
+    navigate('/capabilities');
+  };
+
+  const handleNavigateToOrchestrator = () => {
+    navigate('/orchestrator');
+  };
+
   return (
     <div className="p-6 space-y-8">
       {/* Header */}
@@ -109,7 +137,10 @@ export const Dashboard: React.FC = () => {
           <p className="text-slate-400">Monitor and orchestrate your NFT-Agents across target systems and environments.</p>
         </div>
         <div className="mt-4 lg:mt-0">
-          <button className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 flex items-center space-x-2">
+          <button 
+            onClick={() => setIsAgentCreationModalOpen(true)}
+            className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 flex items-center space-x-2"
+          >
             <Zap className="w-5 h-5" />
             <span>Deploy Agent</span>
           </button>
@@ -145,7 +176,12 @@ export const Dashboard: React.FC = () => {
         <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold text-white">Recent Agent Activity</h2>
-            <button className="text-purple-400 hover:text-purple-300 text-sm font-medium">View All</button>
+            <button 
+              onClick={handleNavigateToOrchestrator}
+              className="text-purple-400 hover:text-purple-300 text-sm font-medium"
+            >
+              View All
+            </button>
           </div>
           <div className="space-y-4">
             {recentActivity.map((activity) => (
@@ -220,28 +256,47 @@ export const Dashboard: React.FC = () => {
       <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50">
         <h2 className="text-xl font-bold text-white mb-6">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button className="p-4 bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 border border-purple-500/30 rounded-lg transition-all duration-200 text-left">
+          <button 
+            onClick={() => setIsAgentCreationModalOpen(true)}
+            className="p-4 bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 border border-purple-500/30 rounded-lg transition-all duration-200 text-left"
+          >
             <Bot className="w-8 h-8 text-purple-400 mb-2" />
             <p className="text-white font-medium">Deploy New Agent</p>
             <p className="text-slate-400 text-sm">Launch agent to target system</p>
           </button>
-          <button className="p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 border border-green-500/30 rounded-lg transition-all duration-200 text-left">
+          <button 
+            onClick={handleNavigateToTargets}
+            className="p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 border border-green-500/30 rounded-lg transition-all duration-200 text-left"
+          >
             <Target className="w-8 h-8 text-green-400 mb-2" />
             <p className="text-white font-medium">Add Target System</p>
             <p className="text-slate-400 text-sm">Connect new environment</p>
           </button>
-          <button className="p-4 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30 border border-blue-500/30 rounded-lg transition-all duration-200 text-left">
+          <button 
+            onClick={handleNavigateToCapabilities}
+            className="p-4 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:to-cyan-500/30 border border-blue-500/30 rounded-lg transition-all duration-200 text-left"
+          >
             <Zap className="w-8 h-8 text-blue-400 mb-2" />
             <p className="text-white font-medium">Install Capability</p>
             <p className="text-slate-400 text-sm">Add MCP server capability</p>
           </button>
-          <button className="p-4 bg-gradient-to-r from-orange-500/20 to-red-500/20 hover:from-orange-500/30 hover:to-red-500/30 border border-orange-500/30 rounded-lg transition-all duration-200 text-left">
+          <button 
+            onClick={handleNavigateToOrchestrator}
+            className="p-4 bg-gradient-to-r from-orange-500/20 to-red-500/20 hover:from-orange-500/30 hover:to-red-500/30 border border-orange-500/30 rounded-lg transition-all duration-200 text-left"
+          >
             <Activity className="w-8 h-8 text-orange-400 mb-2" />
             <p className="text-white font-medium">Monitor Activity</p>
             <p className="text-slate-400 text-sm">View real-time logs</p>
           </button>
         </div>
       </div>
+
+      {/* Agent Creation Modal */}
+      <AgentCreationModal 
+        isOpen={isAgentCreationModalOpen} 
+        onClose={() => setIsAgentCreationModalOpen(false)} 
+        onAgentCreated={handleAgentCreated} 
+      />
     </div>
   );
 };

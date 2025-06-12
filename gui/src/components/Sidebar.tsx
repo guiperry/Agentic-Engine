@@ -10,6 +10,7 @@ import {
   Brain,
   X
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 type ActiveView = 'dashboard' | 'agents' | 'capabilities' | 'targets' | 'orchestrator' | 'analytics' | 'settings';
 
@@ -21,16 +22,24 @@ interface SidebarProps {
 }
 
 const navigation = [
-  { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
-  { id: 'agents', name: 'NFT-Agents', icon: Bot },
-  { id: 'capabilities', name: 'Capabilities', icon: Zap },
-  { id: 'targets', name: 'Target Systems', icon: Target },
-  { id: 'orchestrator', name: 'Orchestrator', icon: GitBranch },
-  { id: 'analytics', name: 'Analytics', icon: BarChart3 },
-  { id: 'settings', name: 'Settings', icon: Settings },
+  { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+  { id: 'agents', name: 'NFT-Agents', icon: Bot, path: '/agents' },
+  { id: 'capabilities', name: 'Capabilities', icon: Zap, path: '/capabilities' },
+  { id: 'targets', name: 'Target Systems', icon: Target, path: '/targets' },
+  { id: 'orchestrator', name: 'Orchestrator', icon: GitBranch, path: '/orchestrator' },
+  { id: 'analytics', name: 'Analytics', icon: BarChart3, path: '/analytics' },
+  { id: 'settings', name: 'Settings', icon: Settings, path: '/settings' },
 ];
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isOpen, setIsOpen }) => {
+  const navigate = useNavigate();
+
+  const handleNavigation = (view: ActiveView, path: string) => {
+    setActiveView(view);
+    setIsOpen(false);
+    navigate(path);
+  };
+
   return (
     <>
       {/* Mobile overlay */}
@@ -74,10 +83,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeView, setActiveView, isO
               return (
                 <li key={item.id}>
                   <button
-                    onClick={() => {
-                      setActiveView(item.id as ActiveView);
-                      setIsOpen(false);
-                    }}
+                    onClick={() => handleNavigation(item.id as ActiveView, item.path)}
                     className={`
                       w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200
                       ${isActive 

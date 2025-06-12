@@ -17,11 +17,18 @@ import {
   Activity,
   Clock
 } from 'lucide-react';
+import AgentCreationModal from './modals/AgentCreationModal';
+import AgentDeploymentModal from './modals/AgentDeploymentModal';
+import AgentConfigModal from './modals/AgentConfigModal';
 
 export const AgentManager = () => {
   const [viewMode, setViewMode] = useState('grid');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
+  const [isDeploymentModalOpen, setIsDeploymentModalOpen] = useState(false);
+  const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState(null);
 
   const categories = [
     { id: 'all', name: 'All Agents' },
@@ -31,7 +38,7 @@ export const AgentManager = () => {
     { id: 'maintenance', name: 'Maintenance' },
   ];
 
-  const agents = [
+  const [agents, setAgents] = useState([
     {
       id: 1,
       name: 'CyberPunk Agent #7804',
@@ -122,7 +129,7 @@ export const AgentManager = () => {
       capabilities: ['System Monitoring', 'Performance Analysis', 'Resource Management'],
       targetTypes: ['Operating System', 'Hardware', 'System Processes']
     }
-  ];
+  ]);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -165,6 +172,58 @@ export const AgentManager = () => {
     return matchesSearch && matchesCategory;
   });
 
+  const handleAgentCreated = (newAgent) => {
+    setAgents(prevAgents => [...prevAgents, { ...newAgent, id: prevAgents.length + 1 }]);
+    setIsCreationModalOpen(false);
+  };
+
+  const handleAgentDeployed = (updatedAgent) => {
+    setAgents(prevAgents => 
+      prevAgents.map(agent => 
+        agent.id === updatedAgent.id ? updatedAgent : agent
+      )
+    );
+    setIsDeploymentModalOpen(false);
+    setSelectedAgent(null);
+  };
+
+  const handleAgentUpdated = (updatedAgent) => {
+    setAgents(prevAgents => 
+      prevAgents.map(agent => 
+        agent.id === updatedAgent.id ? updatedAgent : agent
+      )
+    );
+    setIsConfigModalOpen(false);
+    setSelectedAgent(null);
+  };
+
+  const handleDeployClick = (agent) => {
+    setSelectedAgent(agent);
+    setIsDeploymentModalOpen(true);
+  };
+
+  const handleConfigClick = (agent) => {
+    setSelectedAgent(agent);
+    setIsConfigModalOpen(true);
+  };
+
+  const handleStopAgent = (agent) => {
+    // In a real implementation, this would call an API to stop the agent
+    const updatedAgent = {
+      ...agent,
+      status: 'idle',
+      currentTarget: null,
+      capability: null,
+      deployedSince: null
+    };
+    
+    setAgents(prevAgents => 
+      prevAgents.map(a => 
+        a.id === agent.id ? updatedAgent : a
+      )
+    );
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* Header */}
@@ -174,7 +233,10 @@ export const AgentManager = () => {
           <p className="text-slate-400">Deploy and manage your agentic NFTs across target systems and environments.</p>
         </div>
         <div className="mt-4 lg:mt-0">
-          <button className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 flex items-center space-x-2">
+          <button 
+            onClick={() => setIsCreationModalOpen(true)}
+            className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 flex items-center space-x-2"
+          >
             <Plus className="w-5 h-5" />
             <span>Create Agent</span>
           </button>
@@ -263,7 +325,10 @@ export const AgentManager = () => {
                   <button className="p-2 bg-black/50 backdrop-blur-sm rounded-lg text-white hover:bg-black/70 transition-colors duration-200">
                     <Eye className="w-4 h-4" />
                   </button>
-                  <button className="p-2 bg-black/50 backdrop-blur-sm rounded-lg text-white hover:bg-black/70 transition-colors duration-200">
+                  <button 
+                    className="p-2 bg-black/50 backdrop-blur-sm rounded-lg text-white hover:bg-black/70 transition-colors duration-200"
+                    onClick={() => handleConfigClick(agent)}
+                  >
                     <Settings className="w-4 h-4" />
                   </button>
                 </div>
@@ -315,12 +380,18 @@ export const AgentManager = () => {
                 
                 <div className="flex items-center space-x-2">
                   {agent.status === 'idle' ? (
-                    <button className="flex-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 border border-green-500/30 text-white py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2">
+                    <button 
+                      onClick={() => handleDeployClick(agent)}
+                      className="flex-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 border border-green-500/30 text-white py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                    >
                       <Play className="w-4 h-4" />
                       <span>Deploy</span>
                     </button>
                   ) : (
-                    <button className="flex-1 bg-gradient-to-r from-red-500/20 to-orange-500/20 hover:from-red-500/30 hover:to-orange-500/30 border border-red-500/30 text-white py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2">
+                    <button 
+                      onClick={() => handleStopAgent(agent)}
+                      className="flex-1 bg-gradient-to-r from-red-500/20 to-orange-500/20 hover:from-red-500/30 hover:to-orange-500/30 border border-red-500/30 text-white py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                    >
                       <Square className="w-4 h-4" />
                       <span>Stop</span>
                     </button>
@@ -382,19 +453,28 @@ export const AgentManager = () => {
                     <td className="py-4 px-6">
                       <div className="flex items-center space-x-2">
                         {agent.status === 'idle' ? (
-                          <button className="p-2 text-green-400 hover:text-green-300 transition-colors duration-200">
+                          <button 
+                            onClick={() => handleDeployClick(agent)}
+                            className="p-2 text-green-400 hover:text-green-300 transition-colors duration-200"
+                          >
                             <Play className="w-4 h-4" />
                           </button>
                         ) : (
-                          <button className="p-2 text-red-400 hover:text-red-300 transition-colors duration-200">
+                          <button 
+                            onClick={() => handleStopAgent(agent)}
+                            className="p-2 text-red-400 hover:text-red-300 transition-colors duration-200"
+                          >
                             <Square className="w-4 h-4" />
                           </button>
                         )}
                         <button className="p-2 text-slate-400 hover:text-white transition-colors duration-200">
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button className="p-2 text-slate-400 hover:text-white transition-colors duration-200">
-                          <MoreVertical className="w-4 h-4" />
+                        <button 
+                          onClick={() => handleConfigClick(agent)}
+                          className="p-2 text-slate-400 hover:text-white transition-colors duration-200"
+                        >
+                          <Settings className="w-4 h-4" />
                         </button>
                       </div>
                     </td>
@@ -405,6 +485,33 @@ export const AgentManager = () => {
           </div>
         </div>
       )}
+
+      {/* Modals */}
+      <AgentCreationModal 
+        isOpen={isCreationModalOpen} 
+        onClose={() => setIsCreationModalOpen(false)} 
+        onAgentCreated={handleAgentCreated} 
+      />
+      
+      <AgentDeploymentModal 
+        isOpen={isDeploymentModalOpen} 
+        onClose={() => {
+          setIsDeploymentModalOpen(false);
+          setSelectedAgent(null);
+        }} 
+        agent={selectedAgent} 
+        onAgentDeployed={handleAgentDeployed} 
+      />
+      
+      <AgentConfigModal 
+        isOpen={isConfigModalOpen} 
+        onClose={() => {
+          setIsConfigModalOpen(false);
+          setSelectedAgent(null);
+        }} 
+        agent={selectedAgent} 
+        onAgentUpdated={handleAgentUpdated} 
+      />
     </div>
   );
 };
