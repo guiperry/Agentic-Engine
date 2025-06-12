@@ -1,56 +1,57 @@
-# Wordpress Inference Engine
+# Agentic Inference Engine
 
 ## Overview
 
-The Wordpress Inference Engine is a desktop application built with Go and the Fyne toolkit. It allows users to connect to their WordPress sites, manage page content, and leverage AI language models (including Cerebras, Gemini, and DeepSeek) to generate or enhance website content based on existing pages or local files.
+The Agentic Inference Engine is a comprehensive platform for designing, deploying, and managing autonomous AI agents in an easy t use no-code interface. Built with a powerful Go backend and a modern React-based user interface, it empowers users to define complex goals, equip agents with diverse capabilities, and orchestrate their operations to achieve sophisticated outcomes. The engine supports multiple AI language models (including Cerebras, Gemini, and DeepSeek) to drive intelligent decision-making and task execution.
 
 ## Features
 
-*   **WordPress Connectivity:**
-    *   Connect securely to WordPress sites using Application Passwords.
-    *   Save, load, and delete connection details for multiple sites.
-    *   View connection status across different application tabs.
-*   **Content Management (Manager Tab):**
-    *   List pages from the connected WordPress site.
-    *   Preview pages with screenshot functionality.
-    *   Send page content to the Content Generator as source material.
-*   **AI Content Generation (Generator Tab):**
-    *   Add source content from:
-        *   WordPress pages (loaded via the Manager tab).
-        *   Local text files.
-    *   Provide a specific prompt to guide the AI.
-    *   Generate new content using the selected AI provider, synthesizing information from the provided sources and prompt.
-    *   View and edit the generated content.
-    *   Save generated content to a local file.
-    *   Save generated content directly back to a selected WordPress page (overwriting existing content).
-*   **Inference Engine Configuration (Settings Tab):**
-    *   Configure WordPress connection settings.
-    *   Configure AI provider settings.
+*   **Dashboard:** A centralized view for monitoring agent activity, system status, and key performance indicators.
+*   **Agent Manager:**
+    *   Create, configure, and manage multiple AI agents.
+    *   Define agent profiles, base prompts, and operational parameters.
+*   **Capability Store:**
+    *   Discover, enable, and configure various capabilities (tools, skills, data connectors) for your agents.
+    *   Extensible architecture to add custom capabilities.
+*   **Target Manager:**
+    *   Define and manage objectives, goals, or tasks for agents to pursue.
+    *   Track progress towards targets.
+*   **Inference Orchestrator:**
+    *   Coordinate complex workflows involving multiple agents or sequential tasks.
+    *   Manage the flow of information and control between agents and capabilities.
+*   **Analytics & Logging:**
+    *   View detailed logs of agent operations and decision-making processes.
+    *   Analyze agent performance and identify areas for improvement.
+*   **AI Model Integration:**
+    *   Configure and switch between various AI language models (e.g., Cerebras, Gemini, DeepSeek).
     *   Supports multiple AI providers (Cerebras, Gemini, DeepSeek).
-*   **Inference Chat (Inference Chat Tab):**
-    *   Interactive chat interface with the configured AI model.
-    *   Maintain conversation history.
-*   **Direct AI Testing (Test Inference Tab):**
-    *   Send prompts directly to the configured AI provider for quick testing and experimentation.
-    *   View application logs in the console widget.
+*   **Settings Management:**
+    *   Configure AI provider API keys and preferences.
+    *   Manage application-level settings and user preferences.
+*   **Modern Web Interface:**
+    *   Intuitive and responsive user interface built with React and Tailwind CSS.
+    *   Accessible via a web browser.
 *   **Advanced Context Management:**
     *   Process large text inputs that exceed token limits by intelligently chunking content.
     *   Multiple chunking strategies (paragraph-based, sentence-based, token-based).
-    *   Sequential or parallel processing modes.
-*   **Customizable UI:**
-    *   Features a high-contrast dark theme for usability.
-    *   Responsive layout that adapts to different window sizes.
+*   **LLM Provider Fallback:**
+    *   Robust mechanism to switch to backup LLM providers if a primary provider fails.
+
+## Architecture
+
+The Agentic Inference Engine employs a client-server architecture:
+*   **Backend:** Developed in Go, responsible for agent logic, AI model interaction, task orchestration, and API services.
+*   **Frontend:** A single-page application (SPA) built with React and TypeScript, providing a rich user interface for interacting with the engine.
 
 ## Setup and Installation
 
 ### Prerequisites
 
-*   **Go:** Ensure you have Go installed (version 1.23 or later). [https://go.dev/doc/install](https://go.dev/doc/install)
-*   **WordPress Site:** A WordPress site where you can create Application Passwords.
+*   **Go:** Version 1.21 or later (for the backend). [https://go.dev/doc/install](https://go.dev/doc/install)
+*   **Node.js and npm/yarn:** For managing frontend dependencies and running the React development server. [https://nodejs.org/](https://nodejs.org/)
 *   **AI Provider Account:** An account with Cerebras, Google (for Gemini), or DeepSeek to obtain API keys.
-*   **Google Chrome/Chromium:** Required for the page preview functionality.
 
-### Running the Application
+### Installation
 
 1.  **Clone the Repository:**
     ```bash
