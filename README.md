@@ -179,7 +179,7 @@ Ensures operational resilience by:
 
 ## License
 
-*(Placeholder: Specify the license, e.g., MIT, Apache 2.0)*
+*MIT, Apache 2.0*
 
 ## Contributing 
 We welcome contributions! Please read our [contributing guidelines](CONTRIBUTING.md) before submitting pull requests.
