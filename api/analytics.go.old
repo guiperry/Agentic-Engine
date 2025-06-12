@@ -1,0 +1,236 @@
+package api
+
+import (
+	"Inference_Engine/database"
+	"context"
+	"fmt"
+	"net/http"
+	"strconv"
+	"sync"
+	"time"
+
+	"github.com/gin-gonic/gin"
+)
+
+// AnalyticsSummary represents a summary of analytics data
+type AnalyticsSummary struct {
+	TotalWorkflows      int                  `json:"total_workflows"`
+	CompletedWorkflows  int                  `json:"completed_workflows"`
+	FailedWorkflows     int                  `json:"failed_workflows"`
+	SuccessRate         float64              `json:"success_rate"`
+	AverageResponseTime float64              `json:"average_response_time_ms"`
+	TodayWorkflows      int                  `json:"today_workflows"`
+	TopCapabilities     []TopCapabilityUsage `json:"top_capabilities"`
+	AgentCount          int                  `json:"agent_count"`
+	TargetCount         int                  `json:"target_count"`
+	LastUpdated         time.Time            `json:"last_updated"`
+}
+
+// TopCapabilityUsage represents a frequently used capability
+type TopCapabilityUsage struct {
+	ID    string `json:"id"`
+	Name  string `json:"name"`
+	Count int    `json:"count"`
+}
+
+// AnalyticsService manages analytics data
+type AnalyticsService struct {
+	workflowRepo  *database.WorkflowRepository
+	agentService  *AgentService
+	targetService *TargetService
+	capService    *CapabilityService
+	cache         map[int64]*AnalyticsSummary
+	cacheMutex    sync.RWMutex
+	cacheExpiry   time.Duration
+}
+
+// NewAnalyticsService creates a new analytics service
+func NewAnalyticsService(
+	workflowRepo *database.WorkflowRepository,
+	agentService *AgentService,
+	targetService *TargetService,
+	capService *CapabilityService,
+) *AnalyticsService {
+	return &AnalyticsService{
+		workflowRepo:  workflowRepo,
+		agentService:  agentService,
+		targetService: targetService,
+		capService:    capService,
+		cache:         make(map[int64]*AnalyticsSummary),
+		cacheExpiry:   5 * time.Minute, // Cache analytics for 5 minutes
+	}
+}
+
+// GetAnalyticsSummary generates a summary of analytics data for a user
+func (s *AnalyticsService) GetAnalyticsSummary(ctx context.Context, userID int64) (*AnalyticsSummary, error) {
+	// Check cache first
+	s.cacheMutex.RLock()
+	if summary, ok := s.cache[userID]; ok {
+		if time.Since(summary.LastUpdated) < s.cacheExpiry {
+			s.cacheMutex.RUnlock()
+			return summary, nil
+		}
+	}
+	s.cacheMutex.RUnlock()
+
+	// Cache miss or expired, generate new summary
+	summary := &AnalyticsSummary{
+		LastUpdated: time.Now(),
+	}
+
+	// Get workflow stats
+	stats, err := s.workflowRepo.GetWorkflowStats(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get workflow stats: %w", err)
+	}
+
+	summary.TotalCount = stats.TotalCount
+	summary.TodayWorkflows = stats.TodayCount
+	summary.SuccessRate = stats.SuccessRate
+	summary.AverageResponseTime = stats.AvgDuration
+
+	// Get all workflows to count completed and failed
+	workflows, err := s.workflowRepo.GetWorkflowsByOwner(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get workflows: %w", err)
+	}
+
+	for _, workflow := range workflows {
+		if workflow.Status == "completed" {
+			summary.CompletedWorkflows++
+		} else if workflow.Status == "failed" {
+			summary.FailedWorkflows++
+		}
+	}
+
+	// Get top capabilities
+	topCaps, err := s.workflowRepo.GetTopCapabilities(ctx, userID, 5)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get top capabilities: %w", err)
+	}
+
+	// Convert to TopCapabilityUsage with names
+	summary.TopCapabilities = make([]TopCapabilityUsage, 0, len(topCaps))
+	for _, cap := range topCaps {
+		// Try to get capability name
+		capability, err := s.capService.GetCapability(ctx, cap.Name)
+		if err == nil {
+			summary.TopCapabilities = append(summary.TopCapabilities, TopCapabilityUsage{
+				ID:    cap.Name,
+				Name:  capability.Name,
+				Count: cap.Count,
+			})
+		} else {
+			// Fallback to just ID if capability not found
+			summary.TopCapabilities = append(summary.TopCapabilities, TopCapabilityUsage{
+				ID:    cap.Name,
+				Name:  "Unknown Capability",
+				Count: cap.Count,
+			})
+		}
+	}
+
+	// Get agent count
+	agents, err := s.agentService.ListAgents(ctx, userID)
+	if err == nil {
+		summary.AgentCount = len(agents)
+	}
+
+	// Get target count
+	targets, err := s.targetService.ListTargets(ctx, userID)
+	if err == nil {
+		summary.TargetCount = len(targets)
+	}
+
+	// Update cache
+	s.cacheMutex.Lock()
+	s.cache[userID] = summary
+	s.cacheMutex.Unlock()
+
+	return summary, nil
+}
+
+// GetTopCapabilities gets the most frequently used capabilities for a user
+func (s *AnalyticsService) GetTopCapabilities(ctx context.Context, userID int64, limit int) ([]TopCapabilityUsage, error) {
+	// Get top capabilities from database
+	dbTopCaps, err := s.workflowRepo.GetTopCapabilities(ctx, userID, limit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get top capabilities: %w", err)
+	}
+
+	// Convert to TopCapabilityUsage with names
+	topCaps := make([]TopCapabilityUsage, 0, len(dbTopCaps))
+	for _, cap := range dbTopCaps {
+		// Try to get capability name
+		capability, err := s.capService.GetCapability(ctx, cap.Name)
+		if err == nil {
+			topCaps = append(topCaps, TopCapabilityUsage{
+				ID:    cap.Name,
+				Name:  capability.Name,
+				Count: cap.Count,
+			})
+		} else {
+			// Fallback to just ID if capability not found
+			topCaps = append(topCaps, TopCapabilityUsage{
+				ID:    cap.Name,
+				Name:  "Unknown Capability",
+				Count: cap.Count,
+			})
+		}
+	}
+
+	return topCaps, nil
+}
+
+// API Handlers
+
+// getAnalyticsSummaryHandler handles GET /api/v1/analytics/summary
+func (s *AnalyticsService) getAnalyticsSummaryHandler(c *gin.Context) {
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Get analytics summary
+	summary, err := s.GetAnalyticsSummary(c.Request.Context(), userID.(int64))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to get analytics summary: %v", err)})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"summary": summary})
+}
+
+// getTopCapabilitiesHandler handles GET /api/v1/analytics/top-capabilities
+func (s *AnalyticsService) getTopCapabilitiesHandler(c *gin.Context) {
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Get limit from query parameter
+	limitStr := c.DefaultQuery("limit", "5")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit <= 0 {
+		limit = 5
+	}
+
+	// Get top capabilities
+	topCaps, err := s.GetTopCapabilities(c.Request.Context(), userID.(int64), limit)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to get top capabilities: %v", err)})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"capabilities": topCaps})
+}
+
+// RegisterHandlers registers the analytics API handlers
+func (s *AnalyticsService) RegisterHandlers(router *gin.RouterGroup) {
+	router.GET("/analytics/summary", s.getAnalyticsSummaryHandler)
+	router.GET("/analytics/top-capabilities", s.getTopCapabilitiesHandler)
+}

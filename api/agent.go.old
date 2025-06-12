@@ -1,0 +1,234 @@
+package api
+
+import (
+	"Inference_Engine/database"
+	"context"
+	"net/http"
+	"sync"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+)
+
+// AgentService manages NFT-Agents
+type AgentService struct {
+	repository   *database.AgentRepository
+	capService   *CapabilityService
+	inferService *InferenceService
+	mutex        sync.RWMutex
+}
+
+// NewAgentService creates a new agent service with database persistence
+func NewAgentService(repo *database.AgentRepository, capService *CapabilityService, inferService *InferenceService) *AgentService {
+	return &AgentService{
+		repository:   repo,
+		capService:   capService,
+		inferService: inferService,
+	}
+}
+
+// GetAgent retrieves an agent by ID
+func (s *AgentService) GetAgent(ctx context.Context, id string) (*database.Agent, error) {
+	return s.repository.GetAgentByID(ctx, id)
+}
+
+// ListAgents retrieves all agents for a user
+func (s *AgentService) ListAgents(ctx context.Context, userID int64) ([]*database.Agent, error) {
+	return s.repository.GetAgentsByOwner(ctx, userID)
+}
+
+// CreateAgent creates a new agent
+func (s *AgentService) CreateAgent(ctx context.Context, agent *database.Agent) error {
+	// Generate ID if not provided
+	if agent.ID == "" {
+		agent.ID = uuid.New().String()
+	}
+	
+	// Set creation timestamp
+	agent.CreatedAt = time.Now()
+	
+	// Save to database
+	return s.repository.CreateAgent(ctx, agent)
+}
+
+// UpdateAgent updates an existing agent
+func (s *AgentService) UpdateAgent(ctx context.Context, agent *database.Agent) error {
+	return s.repository.UpdateAgent(ctx, agent)
+}
+
+// DeleteAgent deletes an agent
+func (s *AgentService) DeleteAgent(ctx context.Context, id string) error {
+	return s.repository.DeleteAgent(ctx, id)
+}
+
+// FindSimilarAgents finds agents similar to the given query
+func (s *AgentService) FindSimilarAgents(ctx context.Context, query string, limit int) ([]*database.Agent, error) {
+	return s.repository.FindSimilarAgents(ctx, query, limit)
+}
+
+// API Handlers
+
+// getAgentsHandler handles GET /api/v1/agents
+func (s *AgentService) getAgentsHandler(c *gin.Context) {
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Get agents for user
+	agents, err := s.ListAgents(c.Request.Context(), userID.(int64))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get agents"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"agents": agents})
+}
+
+// getAgentHandler handles GET /api/v1/agents/:id
+func (s *AgentService) getAgentHandler(c *gin.Context) {
+	// Get agent ID from path
+	id := c.Param("id")
+	
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Get agent
+	agent, err := s.GetAgent(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found"})
+		return
+	}
+	
+	// Check ownership
+	if agent.OwnerID != userID.(int64) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"agent": agent})
+}
+
+// createAgentHandler handles POST /api/v1/agents
+func (s *AgentService) createAgentHandler(c *gin.Context) {
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Parse request body
+	var agent database.Agent
+	if err := c.ShouldBindJSON(&agent); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+	
+	// Set owner ID
+	agent.OwnerID = userID.(int64)
+	
+	// Create agent
+	if err := s.CreateAgent(c.Request.Context(), &agent); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create agent"})
+		return
+	}
+	
+	c.JSON(http.StatusCreated, gin.H{"agent": agent})
+}
+
+// updateAgentHandler handles PUT /api/v1/agents/:id
+func (s *AgentService) updateAgentHandler(c *gin.Context) {
+	// Get agent ID from path
+	id := c.Param("id")
+	
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Get existing agent
+	existingAgent, err := s.GetAgent(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found"})
+		return
+	}
+	
+	// Check ownership
+	if existingAgent.OwnerID != userID.(int64) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+	
+	// Parse request body
+	var agent database.Agent
+	if err := c.ShouldBindJSON(&agent); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+	
+	// Ensure ID and owner ID are preserved
+	agent.ID = id
+	agent.OwnerID = userID.(int64)
+	agent.CreatedAt = existingAgent.CreatedAt
+	
+	// Update agent
+	if err := s.UpdateAgent(c.Request.Context(), &agent); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update agent"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"agent": agent})
+}
+
+// deleteAgentHandler handles DELETE /api/v1/agents/:id
+func (s *AgentService) deleteAgentHandler(c *gin.Context) {
+	// Get agent ID from path
+	id := c.Param("id")
+	
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Get existing agent
+	existingAgent, err := s.GetAgent(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Agent not found"})
+		return
+	}
+	
+	// Check ownership
+	if existingAgent.OwnerID != userID.(int64) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+	
+	// Delete agent
+	if err := s.DeleteAgent(c.Request.Context(), id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete agent"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"message": "Agent deleted"})
+}
+
+// RegisterHandlers registers the agent API handlers
+func (s *AgentService) RegisterHandlers(router *gin.RouterGroup) {
+	router.GET("/agents", s.getAgentsHandler)
+	router.GET("/agents/:id", s.getAgentHandler)
+	router.POST("/agents", s.createAgentHandler)
+	router.PUT("/agents/:id", s.updateAgentHandler)
+	router.DELETE("/agents/:id", s.deleteAgentHandler)
+}

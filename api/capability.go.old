@@ -1,0 +1,240 @@
+package api
+
+import (
+	"Inference_Engine/database"
+	"context"
+	"net/http"
+	"sync"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+)
+
+// CapabilityService manages capabilities
+type CapabilityService struct {
+	repository *database.CapabilityRepository
+	mutex      sync.RWMutex
+}
+
+// NewCapabilityService creates a new capability service
+func NewCapabilityService(repo *database.CapabilityRepository) *CapabilityService {
+	return &CapabilityService{
+		repository: repo,
+	}
+}
+
+// GetCapability retrieves a capability by ID
+func (s *CapabilityService) GetCapability(ctx context.Context, id string) (*database.Capability, error) {
+	return s.repository.GetCapabilityByID(ctx, id)
+}
+
+// ListCapabilities retrieves all capabilities available to a user
+func (s *CapabilityService) ListCapabilities(ctx context.Context, userID int64) ([]*database.Capability, error) {
+	return s.repository.GetCapabilitiesForUser(ctx, userID)
+}
+
+// CreateCapability creates a new user-defined capability
+func (s *CapabilityService) CreateCapability(ctx context.Context, capability *database.Capability) error {
+	// Generate ID if not provided
+	if capability.ID == "" {
+		capability.ID = uuid.New().String()
+	}
+	
+	// Set creation timestamp
+	capability.CreatedAt = time.Now()
+	
+	// Save to database
+	return s.repository.CreateCapability(ctx, capability)
+}
+
+// UpdateCapability updates an existing capability
+func (s *CapabilityService) UpdateCapability(ctx context.Context, capability *database.Capability) error {
+	return s.repository.UpdateCapability(ctx, capability)
+}
+
+// DeleteCapability deletes a capability
+func (s *CapabilityService) DeleteCapability(ctx context.Context, id string) error {
+	return s.repository.DeleteCapability(ctx, id)
+}
+
+// API Handlers
+
+// getCapabilitiesHandler handles GET /api/v1/capabilities
+func (s *CapabilityService) getCapabilitiesHandler(c *gin.Context) {
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Get capabilities for user
+	capabilities, err := s.ListCapabilities(c.Request.Context(), userID.(int64))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get capabilities"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"capabilities": capabilities})
+}
+
+// getCapabilityHandler handles GET /api/v1/capabilities/:id
+func (s *CapabilityService) getCapabilityHandler(c *gin.Context) {
+	// Get capability ID from path
+	id := c.Param("id")
+	
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Get capability
+	capability, err := s.GetCapability(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Capability not found"})
+		return
+	}
+	
+	// Check ownership (if not a system capability)
+	if !capability.System && (capability.OwnerID == nil || *capability.OwnerID != userID.(int64)) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"capability": capability})
+}
+
+// createCapabilityHandler handles POST /api/v1/capabilities
+func (s *CapabilityService) createCapabilityHandler(c *gin.Context) {
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Parse request body
+	var capability database.Capability
+	if err := c.ShouldBindJSON(&capability); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+	
+	// Set owner ID and ensure it's not a system capability
+	ownerIDValue := userID.(int64)
+	capability.OwnerID = &ownerIDValue
+	capability.System = false
+	
+	// Create capability
+	if err := s.CreateCapability(c.Request.Context(), &capability); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create capability"})
+		return
+	}
+	
+	c.JSON(http.StatusCreated, gin.H{"capability": capability})
+}
+
+// updateCapabilityHandler handles PUT /api/v1/capabilities/:id
+func (s *CapabilityService) updateCapabilityHandler(c *gin.Context) {
+	// Get capability ID from path
+	id := c.Param("id")
+	
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Get existing capability
+	existingCapability, err := s.GetCapability(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Capability not found"})
+		return
+	}
+	
+	// Check if it's a system capability
+	if existingCapability.System {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Cannot modify system capabilities"})
+		return
+	}
+	
+	// Check ownership
+	if existingCapability.OwnerID == nil || *existingCapability.OwnerID != userID.(int64) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+	
+	// Parse request body
+	var capability database.Capability
+	if err := c.ShouldBindJSON(&capability); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+	
+	// Ensure ID, owner ID, and system flag are preserved
+	capability.ID = id
+	capability.OwnerID = existingCapability.OwnerID
+	capability.System = false
+	capability.CreatedAt = existingCapability.CreatedAt
+	
+	// Update capability
+	if err := s.UpdateCapability(c.Request.Context(), &capability); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update capability"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"capability": capability})
+}
+
+// deleteCapabilityHandler handles DELETE /api/v1/capabilities/:id
+func (s *CapabilityService) deleteCapabilityHandler(c *gin.Context) {
+	// Get capability ID from path
+	id := c.Param("id")
+	
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Get existing capability
+	existingCapability, err := s.GetCapability(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Capability not found"})
+		return
+	}
+	
+	// Check if it's a system capability
+	if existingCapability.System {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Cannot delete system capabilities"})
+		return
+	}
+	
+	// Check ownership
+	if existingCapability.OwnerID == nil || *existingCapability.OwnerID != userID.(int64) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+	
+	// Delete capability
+	if err := s.DeleteCapability(c.Request.Context(), id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete capability"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"message": "Capability deleted"})
+}
+
+// RegisterHandlers registers the capability API handlers
+func (s *CapabilityService) RegisterHandlers(router *gin.RouterGroup) {
+	router.GET("/capabilities", s.getCapabilitiesHandler)
+	router.GET("/capabilities/:id", s.getCapabilityHandler)
+	router.POST("/capabilities", s.createCapabilityHandler)
+	router.PUT("/capabilities/:id", s.updateCapabilityHandler)
+	router.DELETE("/capabilities/:id", s.deleteCapabilityHandler)
+}

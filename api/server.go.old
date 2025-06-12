@@ -1,0 +1,186 @@
+package api
+
+import (
+	"Inference_Engine/database"
+	"Inference_Engine/inference"
+	"context"
+	"log"
+	"net/http"
+	"time"
+
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
+)
+
+// Server represents the API server
+type Server struct {
+	router     *gin.Engine
+	httpServer *http.Server
+	services   *ServiceContainer
+}
+
+// ServiceContainer holds all service instances
+type ServiceContainer struct {
+	AuthService         *AuthService
+	AgentService        *AgentService
+	TargetService       *TargetService
+	CapabilityService   *CapabilityService
+	InferenceService    *InferenceService
+	OrchestrationService *OrchestrationService
+	AnalyticsService    *AnalyticsService
+}
+
+// NewServer creates a new API server with all services
+func NewServer(
+	authDB *database.AuthDB,
+	domainDB *database.DomainDB,
+	coreInference *inference.InferenceService,
+	jwtSecret string,
+) (*Server, error) {
+	// Create service container
+	services, err := setupServices(authDB, domainDB, coreInference, jwtSecret)
+	if err != nil {
+		return nil, err
+	}
+	
+	// Setup router with services
+	router := setupRouter(services)
+	
+	return &Server{
+		router: router,
+		httpServer: &http.Server{
+			Addr:    ":8080",
+			Handler: router,
+		},
+		services: services,
+	}, nil
+}
+
+// setupServices initializes all service instances
+func setupServices(
+	authDB *database.AuthDB,
+	domainDB *database.DomainDB,
+	coreInference *inference.InferenceService,
+	jwtSecret string,
+) (*ServiceContainer, error) {
+	// Create user repository
+	userRepo := database.NewUserRepository(authDB.GetDB())
+	
+	// Create auth service
+	authService := NewAuthService(userRepo, jwtSecret)
+	
+	// Get collections from domain DB
+	agentCollection, err := domainDB.GetCollection("agents")
+	if err != nil {
+		return nil, err
+	}
+	
+	targetCollection, err := domainDB.GetCollection("targets")
+	if err != nil {
+		return nil, err
+	}
+	
+	capabilityCollection, err := domainDB.GetCollection("capabilities")
+	if err != nil {
+		return nil, err
+	}
+	
+	workflowCollection, err := domainDB.GetCollection("workflows")
+	if err != nil {
+		return nil, err
+	}
+	
+	// Create repositories
+	agentRepo := database.NewAgentRepository(agentCollection)
+	targetRepo := database.NewTargetRepository(targetCollection)
+	capabilityRepo := database.NewCapabilityRepository(capabilityCollection)
+	workflowRepo := database.NewWorkflowRepository(workflowCollection)
+	
+	// Create domain services
+	capabilityService := NewCapabilityService(capabilityRepo)
+	targetService := NewTargetService(targetRepo)
+	
+	// Create services that depend on other services
+	agentService := NewAgentService(agentRepo, capabilityService, nil) // Will set InferenceService later
+	
+	// Create inference service
+	inferenceService := NewInferenceService(coreInference, agentService, targetService, capabilityService)
+	
+	// Set inference service in agent service
+	agentService.inferService = inferenceService
+	
+	// Create orchestration service
+	orchestrationService := NewOrchestrationService(
+		workflowRepo,
+		agentService,
+		targetService,
+		capabilityService,
+		inferenceService,
+	)
+	
+	// Create analytics service
+	analyticsService := NewAnalyticsService(
+		workflowRepo,
+		agentService,
+		targetService,
+		capabilityService,
+	)
+	
+	return &ServiceContainer{
+		AuthService:         authService,
+		AgentService:        agentService,
+		TargetService:       targetService,
+		CapabilityService:   capabilityService,
+		InferenceService:    inferenceService,
+		OrchestrationService: orchestrationService,
+		AnalyticsService:    analyticsService,
+	}, nil
+}
+
+// setupRouter configures the Gin router with all service handlers
+func setupRouter(services *ServiceContainer) *gin.Engine {
+	router := gin.Default()
+	
+	// CORS middleware
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3000", "http://localhost:5173"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+	
+	// Public routes
+	public := router.Group("/api/v1")
+	{
+		public.POST("/auth/login", services.AuthService.Login)
+		public.POST("/auth/register", services.AuthService.Register)
+	}
+	
+	// Protected routes
+	protected := router.Group("/api/v1")
+	protected.Use(authMiddleware(services.AuthService))
+	
+	// Register service handlers
+	services.AgentService.RegisterHandlers(protected)
+	services.TargetService.RegisterHandlers(protected)
+	services.CapabilityService.RegisterHandlers(protected)
+	services.InferenceService.RegisterHandlers(protected)
+	services.OrchestrationService.RegisterHandlers(protected)
+	services.AnalyticsService.RegisterHandlers(protected)
+	
+	return router
+}
+
+// Start starts the API server
+func (s *Server) Start() error {
+	log.Println("Starting API server on", s.httpServer.Addr)
+	return s.httpServer.ListenAndServe()
+}
+
+// Stop stops the API server
+func (s *Server) Stop(ctx context.Context) error {
+	log.Println("Stopping API server")
+	return s.httpServer.Shutdown(ctx)
+}

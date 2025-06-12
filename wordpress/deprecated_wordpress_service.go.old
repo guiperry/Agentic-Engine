@@ -1,0 +1,109 @@
+package wordpress
+
+import (
+	"fmt"
+	"log"
+)
+
+// DeprecatedWordPressService wraps the legacy WordPress service with warnings
+type DeprecatedWordPressService struct {
+	inner *WordPressService
+}
+
+// NewDeprecatedWordPressService creates a new deprecated WordPress service wrapper
+func NewDeprecatedWordPressService() *DeprecatedWordPressService {
+	log.Println("WARNING: Using deprecated WordPress service. This functionality will be removed in a future version.")
+	return &DeprecatedWordPressService{
+		inner: NewWordPressService(),
+	}
+}
+
+// Connect establishes a connection to the WordPress site with deprecation warning
+func (d *DeprecatedWordPressService) Connect(url, username, password string) error {
+	log.Println("WARNING: Using deprecated WordPress Connect method. This functionality will be removed in a future version.")
+	return d.inner.Connect(url, username, password)
+}
+
+// IsConnected returns the connection status with deprecation warning
+func (d *DeprecatedWordPressService) IsConnected() bool {
+	log.Println("WARNING: Using deprecated WordPress IsConnected method. This functionality will be removed in a future version.")
+	return d.inner.IsConnected()
+}
+
+// GetPages fetches a list of pages from the WordPress site with deprecation warning
+func (d *DeprecatedWordPressService) GetPages(page, perPage int) (PageList, error) {
+	log.Println("WARNING: Using deprecated WordPress GetPages method. This functionality will be removed in a future version.")
+	return d.inner.GetPages(page, perPage)
+}
+
+// GetPage fetches a single page by ID with deprecation warning
+func (d *DeprecatedWordPressService) GetPage(id int) (*Page, error) {
+	log.Println("WARNING: Using deprecated WordPress GetPage method. This functionality will be removed in a future version.")
+	return d.inner.GetPage(id)
+}
+
+// UpdatePage updates a page with deprecation warning
+func (d *DeprecatedWordPressService) UpdatePage(id int, title, content string) error {
+	log.Println("WARNING: Using deprecated WordPress UpdatePage method. This functionality will be removed in a future version.")
+	return d.inner.UpdatePage(id, title, content)
+}
+
+// CreatePage creates a new page with deprecation warning
+func (d *DeprecatedWordPressService) CreatePage(title, content, status string) (int, error) {
+	log.Println("WARNING: Using deprecated WordPress CreatePage method. This functionality will be removed in a future version.")
+	return d.inner.CreatePage(title, content, status)
+}
+
+// DeletePage deletes a page with deprecation warning
+func (d *DeprecatedWordPressService) DeletePage(id int) error {
+	log.Println("WARNING: Using deprecated WordPress DeletePage method. This functionality will be removed in a future version.")
+	return d.inner.DeletePage(id)
+}
+
+// SaveSite saves a site's credentials with deprecation warning
+func (d *DeprecatedWordPressService) SaveSite(name, siteURL, username, appPassword string) error {
+	log.Println("WARNING: Using deprecated WordPress SaveSite method. This functionality will be removed in a future version.")
+	return d.inner.SaveSite(name, siteURL, username, appPassword)
+}
+
+// LoadSavedSites loads saved sites with deprecation warning
+func (d *DeprecatedWordPressService) LoadSavedSites() error {
+	log.Println("WARNING: Using deprecated WordPress LoadSavedSites method. This functionality will be removed in a future version.")
+	return d.inner.LoadSavedSites()
+}
+
+// GetSavedSites returns the list of saved sites with deprecation warning
+func (d *DeprecatedWordPressService) GetSavedSites() []SavedSite {
+	log.Println("WARNING: Using deprecated WordPress GetSavedSites method. This functionality will be removed in a future version.")
+	return d.inner.GetSavedSites()
+}
+
+// GetSavedSite returns a saved site by name with deprecation warning
+func (d *DeprecatedWordPressService) GetSavedSite(name string) (SavedSite, bool) {
+	log.Println("WARNING: Using deprecated WordPress GetSavedSite method. This functionality will be removed in a future version.")
+	return d.inner.GetSavedSite(name)
+}
+
+// DeleteSavedSite deletes a saved site by name with deprecation warning
+func (d *DeprecatedWordPressService) DeleteSavedSite(name string) error {
+	log.Println("WARNING: Using deprecated WordPress DeleteSavedSite method. This functionality will be removed in a future version.")
+	return d.inner.DeleteSavedSite(name)
+}
+
+// GetCurrentSiteName returns the current site name with deprecation warning
+func (d *DeprecatedWordPressService) GetCurrentSiteName() string {
+	log.Println("WARNING: Using deprecated WordPress GetCurrentSiteName method. This functionality will be removed in a future version.")
+	return d.inner.GetCurrentSiteName()
+}
+
+// SetSiteChangeCallback sets the site change callback with deprecation warning
+func (d *DeprecatedWordPressService) SetSiteChangeCallback(callback func()) {
+	log.Println("WARNING: Using deprecated WordPress SetSiteChangeCallback method. This functionality will be removed in a future version.")
+	d.inner.SetSiteChangeCallback(callback)
+}
+
+// GetConfigDir returns the directory for storing configuration files with deprecation warning
+func (d *DeprecatedWordPressService) GetConfigDir() (string, error) {
+	log.Println("WARNING: Using deprecated WordPress GetConfigDir method. This functionality will be removed in a future version.")
+	return d.inner.GetConfigDir()
+}

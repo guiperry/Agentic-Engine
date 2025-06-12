@@ -1,0 +1,388 @@
+package api
+
+import (
+	"Inference_Engine/database"
+	"context"
+	"fmt"
+	"net/http"
+	"sync"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+)
+
+// WorkflowStatus represents the status of a workflow
+type WorkflowStatus string
+
+const (
+	WorkflowStatusPending   WorkflowStatus = "pending"
+	WorkflowStatusRunning   WorkflowStatus = "running"
+	WorkflowStatusCompleted WorkflowStatus = "completed"
+	WorkflowStatusFailed    WorkflowStatus = "failed"
+	WorkflowStatusCancelled WorkflowStatus = "cancelled"
+)
+
+// WorkflowRequest represents a request to start a workflow
+type WorkflowRequest struct {
+	AgentID      string                 `json:"agent_id" binding:"required"`
+	TargetID     string                 `json:"target_id" binding:"required"`
+	CapabilityID string                 `json:"capability_id" binding:"required"`
+	Input        map[string]interface{} `json:"input" binding:"required"`
+}
+
+// WorkflowResult represents the result of a workflow
+type WorkflowResult struct {
+	ID           string                 `json:"id"`
+	Status       WorkflowStatus         `json:"status"`
+	StartTime    time.Time              `json:"start_time"`
+	EndTime      *time.Time             `json:"end_time,omitempty"`
+	AgentID      string                 `json:"agent_id"`
+	TargetID     string                 `json:"target_id"`
+	CapabilityID string                 `json:"capability_id"`
+	Input        map[string]interface{} `json:"input"`
+	Output       map[string]interface{} `json:"output,omitempty"`
+	Error        string                 `json:"error,omitempty"`
+}
+
+// OrchestrationService manages workflow orchestration
+type OrchestrationService struct {
+	workflowRepo  *database.WorkflowRepository
+	agentService  *AgentService
+	targetService *TargetService
+	capService    *CapabilityService
+	inferService  *InferenceService
+	workflows     map[string]*WorkflowResult
+	mutex         sync.RWMutex
+}
+
+// NewOrchestrationService creates a new orchestration service
+func NewOrchestrationService(
+	workflowRepo *database.WorkflowRepository,
+	agentService *AgentService,
+	targetService *TargetService,
+	capService *CapabilityService,
+	inferService *InferenceService,
+) *OrchestrationService {
+	return &OrchestrationService{
+		workflowRepo:  workflowRepo,
+		agentService:  agentService,
+		targetService: targetService,
+		capService:    capService,
+		inferService:  inferService,
+		workflows:     make(map[string]*WorkflowResult),
+	}
+}
+
+// StartWorkflow initiates a new workflow
+func (s *OrchestrationService) StartWorkflow(ctx context.Context, req WorkflowRequest, userID int64) (*WorkflowResult, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	// Generate workflow ID
+	workflowID := uuid.New().String()
+
+	// Create workflow result
+	result := &WorkflowResult{
+		ID:           workflowID,
+		Status:       WorkflowStatusPending,
+		StartTime:    time.Now(),
+		AgentID:      req.AgentID,
+		TargetID:     req.TargetID,
+		CapabilityID: req.CapabilityID,
+		Input:        req.Input,
+	}
+
+	// Store workflow in memory
+	s.workflows[workflowID] = result
+
+	// Create workflow in database
+	workflow := &database.Workflow{
+		ID:           workflowID,
+		AgentID:      req.AgentID,
+		TargetID:     req.TargetID,
+		CapabilityID: req.CapabilityID,
+		Status:       string(WorkflowStatusPending),
+		StartTime:    result.StartTime,
+		OwnerID:      userID,
+	}
+
+	if err := s.workflowRepo.CreateWorkflow(ctx, workflow); err != nil {
+		return nil, fmt.Errorf("failed to create workflow: %w", err)
+	}
+
+	// Start workflow in a goroutine
+	go s.executeWorkflow(context.Background(), result, userID)
+
+	return result, nil
+}
+
+// executeWorkflow runs a workflow asynchronously
+func (s *OrchestrationService) executeWorkflow(ctx context.Context, result *WorkflowResult, userID int64) {
+	s.mutex.Lock()
+	// Update status to running
+	result.Status = WorkflowStatusRunning
+
+	// Update workflow in database
+	workflow, err := s.workflowRepo.GetWorkflowByID(ctx, result.ID)
+	if err == nil {
+		workflow.Status = string(WorkflowStatusRunning)
+		s.workflowRepo.UpdateWorkflow(ctx, workflow)
+	}
+	s.mutex.Unlock()
+
+	// Extract prompt from input
+	prompt, ok := result.Input["prompt"].(string)
+	if !ok {
+		s.completeWorkflowWithError(ctx, result, "Missing or invalid prompt in input", userID)
+		return
+	}
+
+	// Execute the inference
+	output, err := s.inferService.GenerateTextForAgent(
+		ctx,
+		result.AgentID,
+		result.TargetID,
+		result.CapabilityID,
+		prompt,
+	)
+
+	if err != nil {
+		s.completeWorkflowWithError(ctx, result, fmt.Sprintf("Inference failed: %v", err), userID)
+		return
+	}
+
+	// Complete workflow successfully
+	s.completeWorkflowSuccess(ctx, result, output, userID)
+}
+
+// completeWorkflowWithError marks a workflow as failed
+func (s *OrchestrationService) completeWorkflowWithError(ctx context.Context, result *WorkflowResult, errorMsg string, userID int64) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	// Update result
+	result.Status = WorkflowStatusFailed
+	result.Error = errorMsg
+	endTime := time.Now()
+	result.EndTime = &endTime
+
+	// Update workflow in database
+	workflow, err := s.workflowRepo.GetWorkflowByID(ctx, result.ID)
+	if err == nil {
+		workflow.Status = string(WorkflowStatusFailed)
+		workflow.Result = errorMsg
+		workflow.EndTime = endTime
+		s.workflowRepo.UpdateWorkflow(ctx, workflow)
+	}
+}
+
+// completeWorkflowSuccess marks a workflow as completed
+func (s *OrchestrationService) completeWorkflowSuccess(ctx context.Context, result *WorkflowResult, output string, userID int64) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	// Update result
+	result.Status = WorkflowStatusCompleted
+	result.Output = map[string]interface{}{
+		"text": output,
+	}
+	endTime := time.Now()
+	result.EndTime = &endTime
+
+	// Update workflow in database
+	workflow, err := s.workflowRepo.GetWorkflowByID(ctx, result.ID)
+	if err == nil {
+		workflow.Status = string(WorkflowStatusCompleted)
+		workflow.Result = output
+		workflow.EndTime = endTime
+		s.workflowRepo.UpdateWorkflow(ctx, workflow)
+	}
+}
+
+// GetWorkflow retrieves a workflow by ID
+func (s *OrchestrationService) GetWorkflow(ctx context.Context, id string) (*WorkflowResult, error) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
+	// Check in-memory cache first
+	if result, ok := s.workflows[id]; ok {
+		return result, nil
+	}
+
+	// If not in memory, try to get from database
+	workflow, err := s.workflowRepo.GetWorkflowByID(ctx, id)
+	if err != nil {
+		return nil, fmt.Errorf("workflow not found: %w", err)
+	}
+
+	// Convert database workflow to result
+	result := &WorkflowResult{
+		ID:           workflow.ID,
+		Status:       WorkflowStatus(workflow.Status),
+		StartTime:    workflow.StartTime,
+		AgentID:      workflow.AgentID,
+		TargetID:     workflow.TargetID,
+		CapabilityID: workflow.CapabilityID,
+	}
+
+	if !workflow.EndTime.IsZero() {
+		result.EndTime = &workflow.EndTime
+	}
+
+	if workflow.Result != "" {
+		if workflow.Status == string(WorkflowStatusFailed) {
+			result.Error = workflow.Result
+		} else {
+			result.Output = map[string]interface{}{
+				"text": workflow.Result,
+			}
+		}
+	}
+
+	// Cache in memory
+	s.workflows[id] = result
+
+	return result, nil
+}
+
+// ListWorkflows retrieves all workflows for a user
+func (s *OrchestrationService) ListWorkflows(ctx context.Context, userID int64) ([]*WorkflowResult, error) {
+	// Get workflows from database
+	workflows, err := s.workflowRepo.GetWorkflowsByOwner(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list workflows: %w", err)
+	}
+
+	// Convert to results
+	results := make([]*WorkflowResult, len(workflows))
+	for i, workflow := range workflows {
+		result := &WorkflowResult{
+			ID:           workflow.ID,
+			Status:       WorkflowStatus(workflow.Status),
+			StartTime:    workflow.StartTime,
+			AgentID:      workflow.AgentID,
+			TargetID:     workflow.TargetID,
+			CapabilityID: workflow.CapabilityID,
+		}
+
+		if !workflow.EndTime.IsZero() {
+			result.EndTime = &workflow.EndTime
+		}
+
+		if workflow.Result != "" {
+			if workflow.Status == string(WorkflowStatusFailed) {
+				result.Error = workflow.Result
+			} else {
+				result.Output = map[string]interface{}{
+					"text": workflow.Result,
+				}
+			}
+		}
+
+		results[i] = result
+
+		// Update cache
+		s.mutex.Lock()
+		s.workflows[workflow.ID] = result
+		s.mutex.Unlock()
+	}
+
+	return results, nil
+}
+
+// API Handlers
+
+// orchestrateWorkflowHandler handles POST /api/v1/orchestrate
+func (s *OrchestrationService) orchestrateWorkflowHandler(c *gin.Context) {
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Parse request body
+	var req WorkflowRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	// Verify ownership of agent and target
+	agent, err := s.agentService.GetAgent(c.Request.Context(), req.AgentID)
+	if err != nil || agent.OwnerID != userID.(int64) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied to agent"})
+		return
+	}
+
+	target, err := s.targetService.GetTarget(c.Request.Context(), req.TargetID)
+	if err != nil || target.OwnerID != userID.(int64) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied to target"})
+		return
+	}
+
+	// Start workflow
+	result, err := s.StartWorkflow(c.Request.Context(), req, userID.(int64))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to start workflow: %v", err)})
+		return
+	}
+
+	c.JSON(http.StatusCreated, gin.H{"workflow": result})
+}
+
+// getOrchestrationStatusHandler handles GET /api/v1/orchestration/:id
+func (s *OrchestrationService) getOrchestrationStatusHandler(c *gin.Context) {
+	// Get workflow ID from path
+	id := c.Param("id")
+
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Get workflow
+	result, err := s.GetWorkflow(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Workflow not found"})
+		return
+	}
+
+	// Verify ownership
+	workflow, err := s.workflowRepo.GetWorkflowByID(c.Request.Context(), id)
+	if err != nil || workflow.OwnerID != userID.(int64) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"workflow": result})
+}
+
+// getOrchestrationsHandler handles GET /api/v1/orchestrations
+func (s *OrchestrationService) getOrchestrationsHandler(c *gin.Context) {
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// List workflows
+	results, err := s.ListWorkflows(c.Request.Context(), userID.(int64))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to list workflows: %v", err)})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"workflows": results})
+}
+
+// RegisterHandlers registers the orchestration API handlers
+func (s *OrchestrationService) RegisterHandlers(router *gin.RouterGroup) {
+	router.POST("/orchestrate", s.orchestrateWorkflowHandler)
+	router.GET("/orchestration/:id", s.getOrchestrationStatusHandler)
+	router.GET("/orchestrations", s.getOrchestrationsHandler)
+}

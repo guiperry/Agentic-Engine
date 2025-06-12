@@ -1,0 +1,197 @@
+package api
+
+import (
+	"Inference_Engine/database"
+	"Inference_Engine/inference"
+	"context"
+	"errors"
+	"fmt"
+	"log"
+	"net/http"
+	"sync"
+	"time"
+
+	"github.com/gin-gonic/gin"
+)
+
+// InferenceService extends the core inference service with agent-based capabilities
+type InferenceService struct {
+	core         *inference.InferenceService
+	agentService *AgentService
+	targetService *TargetService
+	capService   *CapabilityService
+	mutex        sync.RWMutex
+}
+
+// NewInferenceService creates a new inference service with agent support
+func NewInferenceService(core *inference.InferenceService, agentService *AgentService, targetService *TargetService, capService *CapabilityService) *InferenceService {
+	return &InferenceService{
+		core:         core,
+		agentService: agentService,
+		targetService: targetService,
+		capService:   capService,
+	}
+}
+
+// GenerateTextForAgent generates text using an agent, target, and capability
+func (s *InferenceService) GenerateTextForAgent(ctx context.Context, agentID, targetID, capabilityID, promptText string) (string, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	
+	// Get agent, target, and capability
+	agent, err := s.agentService.GetAgent(ctx, agentID)
+	if err != nil {
+		return "", fmt.Errorf("failed to get agent: %w", err)
+	}
+	
+	target, err := s.targetService.GetTarget(ctx, targetID)
+	if err != nil {
+		return "", fmt.Errorf("failed to get target: %w", err)
+	}
+	
+	capability, err := s.capService.GetCapability(ctx, capabilityID)
+	if err != nil {
+		return "", fmt.Errorf("failed to get capability: %w", err)
+	}
+	
+	// Validate compatibility
+	if !s.validateCompatibility(agent, target, capability) {
+		return "", errors.New("incompatible agent, target, or capability")
+	}
+	
+	// Construct prompt based on capability
+	enhancedPrompt := s.constructPromptForCapability(capability, promptText, agent, target)
+	
+	// Track start time for analytics
+	startTime := time.Now()
+	
+	// Use existing generation method
+	result, err := s.core.GenerateText(capability.Provider, enhancedPrompt, "")
+	
+	// Update target activity
+	s.targetService.UpdateTargetActivity(ctx, targetID)
+	
+	// Record execution duration
+	duration := time.Since(startTime)
+	log.Printf("Inference completed in %v ms for agent %s, target %s, capability %s", 
+		duration.Milliseconds(), agent.Name, target.Name, capability.Name)
+	
+	return result, err
+}
+
+// validateCompatibility checks if an agent, target, and capability are compatible
+func (s *InferenceService) validateCompatibility(agent *database.Agent, target *database.TargetSystem, capability *database.Capability) bool {
+	// Check if agent has the capability
+	hasCapability := false
+	for _, cap := range agent.Capabilities {
+		if cap == capability.ID {
+			hasCapability = true
+			break
+		}
+	}
+	if !hasCapability {
+		return false
+	}
+	
+	// Check if target supports the capability
+	targetSupportsCapability := false
+	for _, cap := range target.Capabilities {
+		if cap == capability.ID {
+			targetSupportsCapability = true
+			break
+		}
+	}
+	if !targetSupportsCapability {
+		return false
+	}
+	
+	return true
+}
+
+// constructPromptForCapability creates a prompt tailored for a specific capability
+func (s *InferenceService) constructPromptForCapability(capability *database.Capability, promptText string, agent *database.Agent, target *database.TargetSystem) string {
+	// Create a capability-specific prompt
+	prompt := fmt.Sprintf("You are %s, an AI agent with %s capabilities.\n", agent.Name, capability.Type)
+	prompt += fmt.Sprintf("You are interacting with a %s system named %s.\n", target.Type, target.Name)
+	prompt += fmt.Sprintf("Your task is to use your %s capability to: %s\n\n", capability.Name, promptText)
+	
+	// Add capability-specific instructions
+	switch capability.Type {
+	case "vision":
+		prompt += "Analyze the visual content and provide detailed observations.\n"
+	case "nlp":
+		prompt += "Process the text and provide a comprehensive analysis.\n"
+	case "reasoning":
+		prompt += "Apply logical reasoning to solve the problem step by step.\n"
+	case "creative":
+		prompt += "Generate creative and original content based on the request.\n"
+	}
+	
+	// Add the original prompt
+	prompt += "User request: " + promptText
+	
+	return prompt
+}
+
+// API Handlers
+
+// generateTextHandler handles POST /api/v1/inference/generate
+func (s *InferenceService) generateTextHandler(c *gin.Context) {
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Parse request body
+	var request struct {
+		AgentID      string `json:"agent_id" binding:"required"`
+		TargetID     string `json:"target_id" binding:"required"`
+		CapabilityID string `json:"capability_id" binding:"required"`
+		Prompt       string `json:"prompt" binding:"required"`
+	}
+	
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+	
+	// Verify ownership of agent and target
+	agent, err := s.agentService.GetAgent(c.Request.Context(), request.AgentID)
+	if err != nil || agent.OwnerID != userID.(int64) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied to agent"})
+		return
+	}
+	
+	target, err := s.targetService.GetTarget(c.Request.Context(), request.TargetID)
+	if err != nil || target.OwnerID != userID.(int64) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied to target"})
+		return
+	}
+	
+	// Generate text
+	result, err := s.GenerateTextForAgent(
+		c.Request.Context(),
+		request.AgentID,
+		request.TargetID,
+		request.CapabilityID,
+		request.Prompt,
+	)
+	
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to generate text: %v", err)})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{
+		"result": result,
+		"agent": agent.Name,
+		"target": target.Name,
+	})
+}
+
+// RegisterHandlers registers the inference API handlers
+func (s *InferenceService) RegisterHandlers(router *gin.RouterGroup) {
+	router.POST("/inference/generate", s.generateTextHandler)
+}

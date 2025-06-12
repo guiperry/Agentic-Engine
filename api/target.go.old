@@ -1,0 +1,244 @@
+package api
+
+import (
+	"Inference_Engine/database"
+	"context"
+	"net/http"
+	"sync"
+	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+)
+
+// TargetService manages target systems
+type TargetService struct {
+	repository *database.TargetRepository
+	mutex      sync.RWMutex
+}
+
+// NewTargetService creates a new target service
+func NewTargetService(repo *database.TargetRepository) *TargetService {
+	return &TargetService{
+		repository: repo,
+	}
+}
+
+// GetTarget retrieves a target by ID
+func (s *TargetService) GetTarget(ctx context.Context, id string) (*database.TargetSystem, error) {
+	return s.repository.GetTargetByID(ctx, id)
+}
+
+// ListTargets retrieves all targets for a user
+func (s *TargetService) ListTargets(ctx context.Context, userID int64) ([]*database.TargetSystem, error) {
+	return s.repository.GetTargetsByOwner(ctx, userID)
+}
+
+// CreateTarget creates a new target
+func (s *TargetService) CreateTarget(ctx context.Context, target *database.TargetSystem) error {
+	// Generate ID if not provided
+	if target.ID == "" {
+		target.ID = uuid.New().String()
+	}
+	
+	// Set creation timestamp
+	target.CreatedAt = time.Now()
+	
+	// Set last activity if not provided
+	if target.LastActivity.IsZero() {
+		target.LastActivity = time.Now()
+	}
+	
+	// Save to database
+	return s.repository.CreateTarget(ctx, target)
+}
+
+// UpdateTarget updates an existing target
+func (s *TargetService) UpdateTarget(ctx context.Context, target *database.TargetSystem) error {
+	return s.repository.UpdateTarget(ctx, target)
+}
+
+// DeleteTarget deletes a target
+func (s *TargetService) DeleteTarget(ctx context.Context, id string) error {
+	return s.repository.DeleteTarget(ctx, id)
+}
+
+// UpdateTargetActivity updates the last activity timestamp for a target
+func (s *TargetService) UpdateTargetActivity(ctx context.Context, id string) error {
+	target, err := s.GetTarget(ctx, id)
+	if err != nil {
+		return err
+	}
+	
+	target.LastActivity = time.Now()
+	return s.repository.UpdateTarget(ctx, target)
+}
+
+// API Handlers
+
+// getTargetsHandler handles GET /api/v1/targets
+func (s *TargetService) getTargetsHandler(c *gin.Context) {
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Get targets for user
+	targets, err := s.ListTargets(c.Request.Context(), userID.(int64))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get targets"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"targets": targets})
+}
+
+// getTargetHandler handles GET /api/v1/targets/:id
+func (s *TargetService) getTargetHandler(c *gin.Context) {
+	// Get target ID from path
+	id := c.Param("id")
+	
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Get target
+	target, err := s.GetTarget(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Target not found"})
+		return
+	}
+	
+	// Check ownership
+	if target.OwnerID != userID.(int64) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"target": target})
+}
+
+// createTargetHandler handles POST /api/v1/targets
+func (s *TargetService) createTargetHandler(c *gin.Context) {
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Parse request body
+	var target database.TargetSystem
+	if err := c.ShouldBindJSON(&target); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+	
+	// Set owner ID
+	target.OwnerID = userID.(int64)
+	
+	// Create target
+	if err := s.CreateTarget(c.Request.Context(), &target); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create target"})
+		return
+	}
+	
+	c.JSON(http.StatusCreated, gin.H{"target": target})
+}
+
+// updateTargetHandler handles PUT /api/v1/targets/:id
+func (s *TargetService) updateTargetHandler(c *gin.Context) {
+	// Get target ID from path
+	id := c.Param("id")
+	
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Get existing target
+	existingTarget, err := s.GetTarget(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Target not found"})
+		return
+	}
+	
+	// Check ownership
+	if existingTarget.OwnerID != userID.(int64) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+	
+	// Parse request body
+	var target database.TargetSystem
+	if err := c.ShouldBindJSON(&target); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+	
+	// Ensure ID and owner ID are preserved
+	target.ID = id
+	target.OwnerID = userID.(int64)
+	target.CreatedAt = existingTarget.CreatedAt
+	
+	// Update last activity
+	target.LastActivity = time.Now()
+	
+	// Update target
+	if err := s.UpdateTarget(c.Request.Context(), &target); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update target"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"target": target})
+}
+
+// deleteTargetHandler handles DELETE /api/v1/targets/:id
+func (s *TargetService) deleteTargetHandler(c *gin.Context) {
+	// Get target ID from path
+	id := c.Param("id")
+	
+	// Get user ID from context
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+	
+	// Get existing target
+	existingTarget, err := s.GetTarget(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Target not found"})
+		return
+	}
+	
+	// Check ownership
+	if existingTarget.OwnerID != userID.(int64) {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Access denied"})
+		return
+	}
+	
+	// Delete target
+	if err := s.DeleteTarget(c.Request.Context(), id); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete target"})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{"message": "Target deleted"})
+}
+
+// RegisterHandlers registers the target API handlers
+func (s *TargetService) RegisterHandlers(router *gin.RouterGroup) {
+	router.GET("/targets", s.getTargetsHandler)
+	router.GET("/targets/:id", s.getTargetHandler)
+	router.POST("/targets", s.createTargetHandler)
+	router.PUT("/targets/:id", s.updateTargetHandler)
+	router.DELETE("/targets/:id", s.deleteTargetHandler)
+}
