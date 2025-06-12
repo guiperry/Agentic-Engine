@@ -67,89 +67,119 @@ The Agentic Inference Engine employs a client-server architecture:
         DEEPSEEK_API_KEY=your_deepseek_api_key_here
         ```
     *   The application will load these keys on startup. Alternatively, you can set these as system environment variables.
-3.  **Build and Run:**
-    ```bash
-    go run .
-    ```
-    Or build an executable:
-    ```bash
-    go build -o wordpress-inference-engine .
-    ./wordpress-inference-engine
-    ```
+
+3.  **Setup Backend:**
+    *   Navigate to the backend directory.
+    *   Build the backend:
+        ```bash
+        go build -o agentic-engine-backend .
+        ```
+
+4.  **Setup Frontend:**
+    *   Navigate to the frontend directory (e.g., `cd gui`):
+        ```bash
+        cd gui
+        ```
+    *   Install dependencies:
+        ```bash
+        npm install
+        # or
+        yarn install
+        ```
+
+### Running the Application
+
+1.  **Start the Backend:**
+    *   From the backend directory:
+        ```bash
+        ./agentic-engine-backend
+        # or
+        go run .
+        ```
+    *   The backend server will typically start on a port like `localhost:8080` (confirm from backend configuration/logs).
+
+2.  **Start the Frontend:**
+    *   From the frontend directory (`gui`):
+        ```bash
+        npm run dev
+        # or
+        yarn dev
+        ```
+    *   This will start the React development server, usually on `localhost:5173` (or similar, check your Vite/React scripts config).
+    *   Open your web browser and navigate to the frontend URL.
 
 ## Usage
 
-1.  **Settings Tab:**
-    *   Go to the "Settings" tab first (selected by default on startup).
-    *   Under "WordPress Connection", enter your site URL, WordPress username, and an Application Password. Check "Remember Me" and provide a "Site Name" if you want to save these details. Click "Connect".
-    *   Under "Inference Settings", ensure the correct API keys are loaded from your `.env` file or environment variables.
+Once the backend and frontend are running, access the application through your web browser.
 
-2.  **Manager Tab:**
-    *   Once connected, the status bar should show "Connected" and the window title will display the site name.
-    *   The list of pages from your WordPress site will load automatically.
-    *   Select a page to view its preview (requires Chrome/Chromium).
-    *   Click "Refresh Preview" to update the preview if needed.
-    *   Click "Load Content to Generator" to use the current page's content as source material in the Generator tab.
+1.  **Settings:**
+    *   Navigate to the "Settings" view.
+    *   Verify or configure your AI Provider API keys and other application settings.
 
-3.  **Generator Tab:**
-    *   Add source content using "Add Source" (for local files) or by loading from the Manager tab.
-    *   Enter a detailed prompt in the "Prompt" box.
-    *   Click "Generate Content".
-    *   Review the generated content in the "Generated Content" box.
-    *   Use "Save to File" or "Save to WordPress" (select target page if multiple WP sources were used).
+2.  **Agent Manager:**
+    *   Go to "Agents" to create new AI agents or manage existing ones.
+    *   Define their purpose, base instructions, and select the AI models they should use.
 
-4.  **Inference Chat Tab:**
-    *   Enter messages in the chat interface to interact with the AI model.
-    *   View the conversation history in the chat display.
+3.  **Capability Store:**
+    *   Explore "Capabilities" to see available tools and integrations.
+    *   Enable and configure capabilities that your agents will need to perform their tasks (e.g., web search, file access, data analysis tools).
 
-5.  **Test Inference Tab:**
-    *   Enter a prompt and click "Test Inference" to get a direct response from the configured AI model.
-    *   View application logs in the console widget at the bottom of this tab.
+4.  **Target Manager:**
+    *   In "Targets," define specific goals or objectives for your agents.
+    *   Assign agents to targets and specify any necessary input data or parameters.
+
+5.  **Inference Orchestrator:**
+    *   Use the "Orchestrator" to design and initiate complex workflows.
+    *   Monitor the execution of multi-step processes and agent interactions.
+
+6.  **Dashboard & Analytics:**
+    *   The "Dashboard" provides an overview of ongoing activities and system health.
+    *   Check "Analytics" for detailed logs, performance metrics, and insights into agent behavior.
 
 ## Configuration Details
 
-*   **API Keys:** Stored as environment variables (`CEREBRAS_API_KEY`, `GEMINI_API_KEY`, `DEEPSEEK_API_KEY`). Using a `.env` file is recommended.
-*   **Saved Sites:** Connection details marked "Remember Me" are saved in JSON format at `~/.wordpress-inference/saved_sites.json`. Passwords are encrypted (currently using Base64 encoding - **consider stronger encryption for production use**).
-*   **LLM Providers:** The application is configured to use Cerebras as the primary provider with Gemini and DeepSeek as fallbacks.
-*   **Context Management:** Large content is automatically processed using the Context Manager, which splits content into manageable chunks based on token limits.
+*   **API Keys:** AI provider API keys (`CEREBRAS_API_KEY`, `GEMINI_API_KEY`, `DEEPSEEK_API_KEY`) are typically managed via a `.env` file in the backend directory or through environment variables.
+*   **Backend Configuration:** Further backend settings (e.g., server port, database connections if any) might be configurable via a `config.json` or environment variables, as defined by the backend implementation.
+*   **LLM Providers:** The application supports multiple LLM providers, with configuration options available in the Settings view to select primary and fallback models.
 
-## WordPress Setup: Application Passwords
+## Dependencies (Illustrative)
 
-This application requires **Application Passwords** for connecting to your WordPress site. Standard user passwords will not work.
-
-1.  Log in to your WordPress admin dashboard.
-2.  Go to "Users" -> "Profile".
-3.  Scroll down to the "Application Passwords" section.
-4.  Enter a name for the application (e.g., "Inference Engine") and click "Add New Application Password".
-5.  **Important:** Copy the generated password immediately. You will **not** be able to see it again.
-6.  Use this generated password in the "Application Password" field in the application's settings.
-
-## Dependencies
-
-*   **Fyne:** Cross-platform GUI toolkit for Go (v2.5.5).
-*   **chromedp:** Headless browser library for capturing page screenshots.
+### Backend (Go)
+*   **Gin Gonic / Echo / net/http:** (Or other Go web framework) For building REST APIs.
 *   **godotenv:** For loading `.env` files.
-*   **gollm:** Library for interacting with LLM providers (using a custom fork).
+*   **gollm:** Library for interacting with LLM providers (potentially a custom fork).
 *   **tiktoken-go:** For token counting and estimation.
+
+### Frontend (React)
+*   **React:** JavaScript library for building user interfaces.
+*   **TypeScript:** Superset of JavaScript adding static typing.
+*   **Tailwind CSS:** Utility-first CSS framework.
+*   **Vite:** Frontend build tool and development server.
+*   **Axios / Fetch API:** For making HTTP requests to the backend.
 
 ## Advanced Features
 
+### Agentic Framework
+The core of the engine is its agentic framework, enabling:
+*   **Goal-Oriented Autonomy:** Agents can pursue high-level goals by breaking them down into actionable steps.
+*   **Dynamic Tool Use:** Agents can select and utilize capabilities from the Capability Store based on task requirements.
+*   **Planning and Reasoning:** Leveraging LLMs, agents can plan sequences of actions and reason about their environment.
+*   **Extensibility:** Designed for adding new agents, capabilities, and orchestration patterns.
+
 ### Context Manager
-
-The Context Manager handles large text inputs by:
-* Splitting content into manageable chunks using different strategies (paragraph, sentence, or token-based)
-* Processing each chunk with the AI model
-* Reassembling the results into a coherent output
-
-This allows processing of content that would otherwise exceed the token limits of the underlying models.
+Handles large data inputs for LLMs by:
+*   Intelligently splitting content into manageable chunks.
+*   Processing each chunk with the AI model.
+*   Synthesizing results to maintain coherence.
 
 ### LLM Provider Fallback
-
-The application implements a sophisticated fallback mechanism:
-* Attempts to use the primary provider (Cerebras) first
-* If the primary provider fails or is unavailable, automatically falls back to alternative providers (Gemini, DeepSeek)
-* Provides seamless experience even when specific providers have issues
+Ensures operational resilience by:
+*   Attempting tasks with the primary configured AI provider.
+*   Automatically switching to secondary/tertiary providers in case of failure or unavailability.
 
 ## License
 
 *(Placeholder: Specify the license, e.g., MIT, Apache 2.0)*
+
+## Contributing 
+We welcome contributions! Please read our [contributing guidelines](CONTRIBUTING.md) before submitting pull requests.
