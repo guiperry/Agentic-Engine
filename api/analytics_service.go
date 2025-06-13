@@ -2,13 +2,13 @@ package api
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 	"sync"
 	"time"
 
-	"Inference_Engine/database/models"
 	"github.com/gorilla/mux"
 )
 
@@ -96,7 +96,7 @@ func (s *AnalyticsService) GetAnalyticsSummary(ctx context.Context, userID int64
 		
 		// Count by status
 		switch workflow.Status {
-		case string(WorkflowStatusCompleted):
+		case WorkflowStatusCompleted:
 			summary.CompletedWorkflows++
 			
 			// Calculate duration for completed workflows
@@ -104,7 +104,7 @@ func (s *AnalyticsService) GetAnalyticsSummary(ctx context.Context, userID int64
 				duration := workflow.EndTime.Sub(workflow.StartTime)
 				summary.AverageResponseTime += float64(duration.Milliseconds())
 			}
-		case string(WorkflowStatusFailed):
+		case WorkflowStatusFailed:
 			summary.FailedWorkflows++
 		}
 	}

@@ -55,8 +55,8 @@ func (sdb *SimpleDomainDB) GetOrCreateCollection(name string) (*chromem.Collecti
 		return sdb.db.GetOrCreateCollection(name, nil, embeddingFunc)
 	}
 
-	// Create Cerebras embedding function using your custom implementation
-	cerebrasEmbedding, err := createCerebrasEmbeddingFunc(apiKey)
+	// Create embedding function (currently returns zero vectors)
+	cerebrasEmbedding, err := createCerebrasEmbeddingFunc()
 	if err != nil {
 		return nil, fmt.Errorf("failed to create Cerebras embedding function: %w", err)
 	}
@@ -64,8 +64,8 @@ func (sdb *SimpleDomainDB) GetOrCreateCollection(name string) (*chromem.Collecti
 	return sdb.db.GetOrCreateCollection(name, nil, cerebrasEmbedding)
 }
 
-// createCerebrasEmbeddingFunc creates an embedding function using your custom Cerebras implementation
-func createCerebrasEmbeddingFunc(apiKey string) (func(context.Context, string) ([]float32, error), error) {
+// createCerebrasEmbeddingFunc creates an embedding function (currently returns zero vectors)
+func createCerebrasEmbeddingFunc() (func(context.Context, string) ([]float32, error), error) {
 	// Import the cerebras package - this will be added when we use it
 	// For now, create a simple wrapper that will use your Cerebras implementation
 	return func(ctx context.Context, text string) ([]float32, error) {

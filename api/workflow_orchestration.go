@@ -84,7 +84,7 @@ func (s *WorkflowOrchestrationService) StartWorkflow(ctx context.Context, req Wo
 	s.workflows[workflowID] = result
 
 	// Start workflow in a goroutine
-	go s.executeWorkflow(context.Background(), result)
+	go s.executeWorkflow(ctx, result)
 
 	return result, nil
 }

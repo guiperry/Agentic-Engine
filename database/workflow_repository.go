@@ -3,7 +3,6 @@ package database
 import (
 	"context"
 	"fmt"
-	"strings"
 	"time"
 
 	"Inference_Engine/database/models"
@@ -12,11 +11,11 @@ import (
 
 // SimpleWorkflowRepository implements a basic workflow repository
 type SimpleWorkflowRepository struct {
-	collection *Collection
+	collection Collection
 }
 
 // NewSimpleWorkflowRepository creates a new workflow repository
-func NewSimpleWorkflowRepository(collection *Collection) *SimpleWorkflowRepository {
+func NewSimpleWorkflowRepository(collection Collection) *SimpleWorkflowRepository {
 	return &SimpleWorkflowRepository{
 		collection: collection,
 	}

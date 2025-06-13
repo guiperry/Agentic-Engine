@@ -173,6 +173,7 @@ func (s *AuthService) ValidateToken(tokenString string) (int64, error) {
 }
 
 // authMiddleware creates a middleware that validates JWT tokens
+// TODO: Implement authentication middleware when needed
 func authMiddleware(authService *AuthService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// Get Authorization header
