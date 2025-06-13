@@ -98,8 +98,9 @@ describe('AgentCreationModal', () => {
     const targetTypes = screen.getAllByText(/Browser|File System|Applications/i);
     fireEvent.click(targetTypes[0]);
     
-    // Submit the form
-    fireEvent.click(screen.getByRole('button', { name: /Create Agent/i }));
+    // Submit the form properly by submitting the form element
+    const form = screen.getByRole('form');
+    fireEvent.submit(form);
     
     // Mock the async operation
     await waitFor(() => {

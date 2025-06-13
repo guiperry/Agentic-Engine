@@ -3,6 +3,8 @@
 ## 📋 **Overview**
 This document outlines the comprehensive implementation plan for the Inc-Line Inference Engine, combining both frontend and backend development requirements. It includes the detailed implementation plan for missing front-end functionality identified during a comprehensive audit, as well as the refactoring plan for the existing Golang inference backend to match the new JavaScript GUI frontend features.
 
+For the detailed Google Agent Development Kit (ADK) integration plan, please refer to the companion document `adk_integration_plan.md`, which provides a comprehensive approach to integrating ADK with our existing Inference Engine.
+
 ## 🔍 **Current Architecture Analysis**
 
 ### Frontend (JavaScript/React)
@@ -206,7 +208,7 @@ func (d *DeprecatedWordPressService) Connect(url, username, password string) err
 
 **Requirements**:
 - Set up SQLite database for authentication
-- Implement chromem-go for domain entities persistence
+- Implement chromem-go for domain entities persistence (as detailed in `adk_integration_plan.md`)
 - Create database management tools
 
 **Implementation Steps**:
@@ -214,7 +216,7 @@ func (d *DeprecatedWordPressService) Connect(url, username, password string) err
 2. Create schema for users, roles, and permissions
 3. Implement repository layer for auth entities
 4. Add migration tools for schema updates
-5. Implement chromem-go for domain entities persistence
+5. Implement chromem-go for domain entities persistence (leveraging the `AgentRegistry` from ADK integration)
 6. Create collections for agents, targets, capabilities, and workflows
 7. Implement repository layer for domain entities
 8. Add data migration and synchronization tools
@@ -287,7 +289,7 @@ func NewDomainDB(persistencePath string) (*DomainDB, error) {
 
 **Requirements**:
 - Create RESTful API layer
-- Refactor InferenceService for agent-based architecture
+- Refactor InferenceService for agent-based architecture using ADK integration
 
 **Implementation Steps**:
 1. Implement a new HTTP server in Golang using standard library or Gin
@@ -296,8 +298,9 @@ func NewDomainDB(persistencePath string) (*DomainDB, error) {
 4. Add JWT authentication middleware
 5. Modify InferenceService to support agent-based architecture
 6. Add support for agent metadata and NFT properties
-7. Implement agent state management
-8. Connect to domain database for persistence
+7. Implement agent state management (using ADK's state management system)
+8. Connect to domain database for persistence (using chromem-go as detailed in `adk_integration_plan.md`)
+9. Implement cross-compilation support using the Makefile and shell script from `adk_integration_plan.md`
 
 **Code Examples**:
 ```go
@@ -505,7 +508,7 @@ type Capability struct {
 - **Event Ingestion**: Configure real-time clickstream or user interaction data using Kafka producers (Go package: `github.com/segmentio/kafka-go v0.4.47`) or Python scripts sending JSON to Kafka topics
 - **Stream Processing**: Set up Apache Kafka + Kafka Streams (Go package: `github.com/confluentinc/confluent-kafka-go/v2 v2.3.0`) or Apache Flink (Go package: `github.com/apache/flink-kubernetes-operator v1.7.0`) for data cleaning, filtering, and enrichment
 - **Windowed Aggregations**: Configure sliding windows for metrics calculation (page views per minute, bounce rate, active users)
-- **Output & Serving**: Configure data sinks to Redis (Go package: `github.com/redis/go-redis/v9 v9.3.0`) for fast lookup or push updates to real-time dashboards via WebSockets or REST APIs
+- **Output & Serving**: Configure data sinks to Chromem-go (Go package: `github.com/philippgille/chromem-go v0.7.0`) for fast lookup or push updates to real-time dashboards via WebSockets or REST APIs
 - **Real-Time Alerting**: Set up rule-based engine or anomaly detector (Go package: `github.com/prometheus/alertmanager v0.26.0`) to trigger alerts for error spikes or latency issues
 - **Dashboard Visualization**: Implement interactive charts and graphs for system monitoring
 
@@ -548,12 +551,13 @@ type Capability struct {
 - `GET /api/v1/agents/tasks/{id}` (Need to create)
 - `POST /api/v1/agents/capabilities` (Need to create)
 
-**Google Agent SDK Integration**:
-- Implement agent orchestration using ADK patterns
-- Support for flexible workflows (Sequential, Parallel, Loop)
-- Enable multi-agent architecture for complex tasks
-- Integrate with tool ecosystem for enhanced capabilities
-- Implement built-in evaluation mechanisms
+**Google Agent Development Kit (ADK) Integration**:
+- Implement agent orchestration using ADK patterns as detailed in `adk_integration_plan.md`
+- Support for flexible workflows (Sequential, Parallel, Loop) via ADK's agent composition
+- Enable multi-agent architecture for complex tasks through chromem-go persistence
+- Integrate with tool ecosystem for enhanced capabilities using ADK's tool system
+- Implement built-in evaluation mechanisms with ADK callbacks
+- Single binary compilation with embedded Python runtime
 
 ### 14. **Web Connections**
 **Status**: ❌ Not Implemented  
@@ -889,9 +893,6 @@ func TestAgentAPI(t *testing.T) {
 **Estimated Effort**: 1 week  
 
 **Requirements**:
-- Create Docker containers for the application
-- Implement Docker Compose for local development
-- Add Kubernetes manifests for production deployment
 - Set up GitHub Actions for continuous integration
 - Implement automated testing
 - Add deployment automation
@@ -972,7 +973,7 @@ func TestAgentAPI(t *testing.T) {
 - D3.js (for data flow visualization)
 - React Flow (for pipeline configuration)
 - Google A2A SDK (for agent communication)
-- Google ADK (for agent development)
+- Google ADK (for agent development, see `adk_integration_plan.md`)
 
 ### **Backend Dependencies**:
 - Gin (for HTTP routing)
@@ -981,7 +982,7 @@ func TestAgentAPI(t *testing.T) {
 - JWT (for authentication)
 - WebSocket (for real-time updates)
 - Kafka (for data engineering)
-- Redis (for caching)
+- Chromem-go (for caching)
 - Prometheus (for monitoring)
 
 ### **Backend API Extensions Needed**:
@@ -1005,7 +1006,7 @@ func TestAgentAPI(t *testing.T) {
 
 ### **Infrastructure Requirements**:
 - Apache Kafka cluster
-- Redis instance
+- Chromem-go instance
 - Prometheus and AlertManager
 - A2A protocol support
 - Secure agent communication channels
@@ -1182,7 +1183,7 @@ CREATE TABLE api_tokens (
 5. **Iterative Testing**: Test each feature as it's implemented
 6. **User Feedback**: Gather feedback and iterate
 7. **Research Priority Components**: Focus on Data Engineering and A2A Protocol research early
-8. **Infrastructure Planning**: Set up Kafka, Redis, and monitoring tools
+8. **Infrastructure Planning**: Set up Kafka, Chromem-go, and monitoring tools
 9. **Integration Strategy**: Develop plan for integrating agent system with data engineering and A2A protocol
 
 ---
