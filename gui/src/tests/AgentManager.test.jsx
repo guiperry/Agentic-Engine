@@ -64,6 +64,38 @@ jest.mock('../components/modals/AgentConfigModal', () => {
   });
 });
 
+jest.mock('../components/modals/AdvancedFilterModal', () => {
+  return jest.fn(({ isOpen, onClose, onApplyFilters, initialFilters, filterOptions }) => {
+    if (!isOpen) return null;
+    return (
+      <div data-testid="advanced-filter-modal">
+        <div>Advanced Filters</div>
+        <button onClick={() => onClose()}>Close</button>
+        <button onClick={() => onApplyFilters([
+          { id: 1, field: 'status', operator: 'equals', value: 'active' }
+        ])}>
+          Apply Filters
+        </button>
+      </div>
+    );
+  });
+});
+
+jest.mock('../components/modals/AgentDetailModal', () => {
+  return jest.fn(({ isOpen, onClose, agent, onDeploy, onStop, onConfigure }) => {
+    if (!isOpen || !agent) return null;
+    return (
+      <div data-testid="agent-detail-modal">
+        <div>Agent Details: {agent.name}</div>
+        <button onClick={() => onClose()}>Close</button>
+        <button onClick={() => onDeploy(agent)}>Deploy</button>
+        <button onClick={() => onStop(agent)}>Stop</button>
+        <button onClick={() => onConfigure(agent)}>Configure</button>
+      </div>
+    );
+  });
+});
+
 describe('AgentManager', () => {
   const renderComponent = () => {
     return render(
@@ -252,5 +284,123 @@ describe('AgentManager', () => {
       const newStopButtonCount = screen.getAllByText('Stop').length;
       expect(newStopButtonCount).toBe(initialStopButtonCount - 1);
     });
+  });
+
+  test('should open advanced filter modal when Filter button is clicked', () => {
+    renderComponent();
+    
+    // Click Filter button
+    fireEvent.click(screen.getByRole('button', { name: /Filter/i }));
+    
+    // Modal should be open
+    expect(screen.getByTestId('advanced-filter-modal')).toBeInTheDocument();
+    
+    // Close the modal
+    fireEvent.click(screen.getByRole('button', { name: /Close/i }));
+    
+    // Modal should be closed
+    expect(screen.queryByTestId('advanced-filter-modal')).not.toBeInTheDocument();
+  });
+
+  test('should apply filters when applied through the modal', async () => {
+    renderComponent();
+    
+    // Initially all agents should be visible
+    expect(screen.getByText('CyberPunk Agent #7804')).toBeInTheDocument();
+    expect(screen.getByText('Code Reviewer #7894')).toBeInTheDocument();
+    
+    // Open filter modal
+    fireEvent.click(screen.getByRole('button', { name: /Filter/i }));
+    
+    // Apply a filter for active agents
+    fireEvent.click(screen.getByRole('button', { name: /Apply Filters/i }));
+    
+    // Wait for filters to be applied
+    await waitFor(() => {
+      // Should show active agents and hide idle agents
+      expect(screen.getByText('CyberPunk Agent #7804')).toBeInTheDocument();
+      expect(screen.queryByText('Code Reviewer #7894')).not.toBeInTheDocument();
+    });
+    
+    // Should show active filters display
+    expect(screen.getByText('Active filters:')).toBeInTheDocument();
+    expect(screen.getByText('Status Equals active')).toBeInTheDocument();
+  });
+
+  test('should clear filters when Clear button is clicked', async () => {
+    renderComponent();
+    
+    // Open filter modal
+    fireEvent.click(screen.getByRole('button', { name: /Filter/i }));
+    
+    // Apply a filter
+    fireEvent.click(screen.getByRole('button', { name: /Apply Filters/i }));
+    
+    // Wait for filters to be applied
+    await waitFor(() => {
+      expect(screen.getByText('Active filters:')).toBeInTheDocument();
+    });
+    
+    // Clear filters
+    fireEvent.click(screen.getByText('Clear'));
+    
+    // All agents should be visible again
+    expect(screen.getByText('CyberPunk Agent #7804')).toBeInTheDocument();
+    expect(screen.getByText('Code Reviewer #7894')).toBeInTheDocument();
+    
+    // Active filters display should be gone
+    expect(screen.queryByText('Active filters:')).not.toBeInTheDocument();
+  });
+
+  test('should open agent detail modal when View button is clicked', () => {
+    renderComponent();
+    
+    // Find a View button and click it
+    const viewButtons = screen.getAllByRole('button', { name: /view details for/i });
+    fireEvent.click(viewButtons[0]);
+    
+    // Detail modal should be open
+    expect(screen.getByTestId('agent-detail-modal')).toBeInTheDocument();
+    
+    // Close the modal
+    fireEvent.click(screen.getByRole('button', { name: /Close/i }));
+    
+    // Modal should be closed
+    expect(screen.queryByTestId('agent-detail-modal')).not.toBeInTheDocument();
+  });
+
+  test('should handle actions from the detail modal', async () => {
+    renderComponent();
+    
+    // Find a View button and click it
+    const viewButtons = screen.getAllByRole('button', { name: /view details for/i });
+    fireEvent.click(viewButtons[0]);
+    
+    // Detail modal should be open
+    expect(screen.getByTestId('agent-detail-modal')).toBeInTheDocument();
+    
+    // Click Deploy in the detail modal
+    fireEvent.click(screen.getByText('Deploy'));
+    
+    // Deployment modal should open
+    expect(screen.getByTestId('agent-deployment-modal')).toBeInTheDocument();
+    
+    // Close the deployment modal
+    fireEvent.click(screen.getAllByRole('button', { name: /Close/i })[0]);
+    
+    // Click Stop in the detail modal
+    fireEvent.click(screen.getByText('Stop'));
+    
+    // Agent should be stopped
+    await waitFor(() => {
+      // Detail modal should still be open
+      expect(screen.getByTestId('agent-detail-modal')).toBeInTheDocument();
+    });
+    
+    // Click Configure in the detail modal
+    fireEvent.click(screen.getByText('Configure'));
+    
+    // Config modal should open
+    expect(screen.getByTestId('agent-config-modal')).toBeInTheDocument();
   });
 });

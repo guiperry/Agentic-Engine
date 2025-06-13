@@ -6,10 +6,11 @@ import { AgentManager } from './components/AgentManager';
 import { CapabilityStore } from './components/CapabilityStore';
 import { TargetManager } from './components/TargetManager';
 import { InferenceOrchestrator } from './components/InferenceOrchestrator';
+import { WorkflowOrchestrator } from './components/WorkflowOrchestrator'; // Import the new component
 import { Analytics } from './components/Analytics';
 import { Settings } from './components/Settings';
 
-type ActiveView = 'dashboard' | 'agents' | 'capabilities' | 'targets' | 'orchestrator' | 'analytics' | 'settings';
+type ActiveView = 'dashboard' | 'agents' | 'capabilities' | 'targets' | 'orchestrator' | 'workflows' | 'analytics' | 'settings';
 
 function App() {
   const [activeView, setActiveView] = useState<ActiveView>('dashboard');
@@ -71,6 +72,7 @@ function App() {
               <Route path="/capabilities" element={<CapabilityStore />} />
               <Route path="/targets" element={<TargetManager />} />
               <Route path="/orchestrator" element={<InferenceOrchestrator />} />
+              <Route path="/workflows" element={<WorkflowOrchestrator />} /> {/* Add the new route */}
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="*" element={<Navigate to="/" replace />} />

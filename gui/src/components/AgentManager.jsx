@@ -20,6 +20,8 @@ import {
 import AgentCreationModal from './modals/AgentCreationModal';
 import AgentDeploymentModal from './modals/AgentDeploymentModal';
 import AgentConfigModal from './modals/AgentConfigModal';
+import AdvancedFilterModal from './modals/AdvancedFilterModal';
+import AgentDetailModal from './modals/AgentDetailModal';
 
 export const AgentManager = () => {
   const [viewMode, setViewMode] = useState('grid');
@@ -28,7 +30,10 @@ export const AgentManager = () => {
   const [isCreationModalOpen, setIsCreationModalOpen] = useState(false);
   const [isDeploymentModalOpen, setIsDeploymentModalOpen] = useState(false);
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState(null);
+  const [activeFilters, setActiveFilters] = useState([]);
 
   const categories = [
     { id: 'all', name: 'All Agents' },
@@ -52,7 +57,9 @@ export const AgentManager = () => {
       successRate: 98.7,
       lastActivity: '2 minutes ago',
       capabilities: ['Web Analysis', 'Data Extraction', 'Content Monitoring'],
-      targetTypes: ['Browser', 'Web APIs', 'Social Media']
+      targetTypes: ['Browser', 'Web APIs', 'Social Media'],
+      createdAt: '2023-12-15T10:30:00Z',
+      owner: 'Agent Master'
     },
     {
       id: 2,
@@ -67,7 +74,9 @@ export const AgentManager = () => {
       successRate: 94.2,
       lastActivity: '5 minutes ago',
       capabilities: ['File Analysis', 'Document Processing', 'Data Mining'],
-      targetTypes: ['File System', 'Databases', 'Archives']
+      targetTypes: ['File System', 'Databases', 'Archives'],
+      createdAt: '2023-11-20T14:45:00Z',
+      owner: 'Data Scientist'
     },
     {
       id: 3,
@@ -82,7 +91,9 @@ export const AgentManager = () => {
       successRate: 99.1,
       lastActivity: '12 minutes ago',
       capabilities: ['Security Analysis', 'Threat Detection', 'Network Monitoring'],
-      targetTypes: ['Network', 'System Processes', 'Security Logs']
+      targetTypes: ['Network', 'System Processes', 'Security Logs'],
+      createdAt: '2023-10-05T09:15:00Z',
+      owner: 'Security Team'
     },
     {
       id: 4,
@@ -97,7 +108,9 @@ export const AgentManager = () => {
       successRate: 87.3,
       lastActivity: '2 hours ago',
       capabilities: ['Code Analysis', 'Quality Assessment', 'Bug Detection'],
-      targetTypes: ['IDE', 'Git Repositories', 'Code Files']
+      targetTypes: ['IDE', 'Git Repositories', 'Code Files'],
+      createdAt: '2024-01-10T16:20:00Z',
+      owner: 'Development Team'
     },
     {
       id: 5,
@@ -112,7 +125,9 @@ export const AgentManager = () => {
       successRate: 96.8,
       lastActivity: '1 minute ago',
       capabilities: ['Image Processing', 'Media Analysis', 'Creative Enhancement'],
-      targetTypes: ['Creative Software', 'Media Files', 'Design Tools']
+      targetTypes: ['Creative Software', 'Media Files', 'Design Tools'],
+      createdAt: '2024-02-05T11:30:00Z',
+      owner: 'Design Team'
     },
     {
       id: 6,
@@ -127,7 +142,9 @@ export const AgentManager = () => {
       successRate: 91.7,
       lastActivity: '1 day ago',
       capabilities: ['System Monitoring', 'Performance Analysis', 'Resource Management'],
-      targetTypes: ['Operating System', 'Hardware', 'System Processes']
+      targetTypes: ['Operating System', 'Hardware', 'System Processes'],
+      createdAt: '2023-09-18T08:45:00Z',
+      owner: 'Operations Team'
     }
   ]);
 
@@ -165,11 +182,82 @@ export const AgentManager = () => {
     }
   };
 
+  // Filter options for the advanced filter modal
+  const filterOptions = {
+    fields: [
+      { id: 'name', name: 'Name' },
+      { id: 'collection', name: 'Collection' },
+      { id: 'status', name: 'Status' },
+      { id: 'capability', name: 'Capability' },
+      { id: 'currentTarget', name: 'Current Target' },
+      { id: 'successRate', name: 'Success Rate' },
+      { id: 'totalInferences', name: 'Total Inferences' },
+      { id: 'createdAt', name: 'Created Date' },
+      { id: 'owner', name: 'Owner' }
+    ],
+    operators: [
+      { id: 'equals', name: 'Equals' },
+      { id: 'not_equals', name: 'Not Equals' },
+      { id: 'contains', name: 'Contains' },
+      { id: 'not_contains', name: 'Not Contains' },
+      { id: 'greater_than', name: 'Greater Than' },
+      { id: 'less_than', name: 'Less Than' },
+      { id: 'starts_with', name: 'Starts With' },
+      { id: 'ends_with', name: 'Ends With' }
+    ]
+  };
+
+  // Apply advanced filters
+  const applyAdvancedFilters = (filters) => {
+    setActiveFilters(filters);
+  };
+
+  // Check if an agent matches the advanced filters
+  const matchesAdvancedFilters = (agent) => {
+    if (activeFilters.length === 0) return true;
+    
+    return activeFilters.every(filter => {
+      const { field, operator, value } = filter;
+      const agentValue = agent[field];
+      
+      // Handle null/undefined values
+      if (agentValue === null || agentValue === undefined) {
+        return operator === 'not_equals' || operator === 'not_contains';
+      }
+      
+      // Convert to string for comparison
+      const agentValueStr = String(agentValue).toLowerCase();
+      const filterValueStr = String(value).toLowerCase();
+      
+      switch (operator) {
+        case 'equals':
+          return agentValueStr === filterValueStr;
+        case 'not_equals':
+          return agentValueStr !== filterValueStr;
+        case 'contains':
+          return agentValueStr.includes(filterValueStr);
+        case 'not_contains':
+          return !agentValueStr.includes(filterValueStr);
+        case 'greater_than':
+          return parseFloat(agentValueStr) > parseFloat(filterValueStr);
+        case 'less_than':
+          return parseFloat(agentValueStr) < parseFloat(filterValueStr);
+        case 'starts_with':
+          return agentValueStr.startsWith(filterValueStr);
+        case 'ends_with':
+          return agentValueStr.endsWith(filterValueStr);
+        default:
+          return true;
+      }
+    });
+  };
+
   const filteredAgents = agents.filter(agent => {
     const matchesSearch = agent.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          agent.collection.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || agent.status === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesAdvanced = matchesAdvancedFilters(agent);
+    return matchesSearch && matchesCategory && matchesAdvanced;
   });
 
   const handleAgentCreated = (newAgent) => {
@@ -207,6 +295,11 @@ export const AgentManager = () => {
     setIsConfigModalOpen(true);
   };
 
+  const handleViewDetails = (agent) => {
+    setSelectedAgent(agent);
+    setIsDetailModalOpen(true);
+  };
+
   const handleStopAgent = (agent) => {
     // In a real implementation, this would call an API to stop the agent
     const updatedAgent = {
@@ -221,6 +314,38 @@ export const AgentManager = () => {
       prevAgents.map(a => 
         a.id === agent.id ? updatedAgent : a
       )
+    );
+  };
+
+  // Format the active filters for display
+  const getActiveFiltersDisplay = () => {
+    if (activeFilters.length === 0) return null;
+    
+    return (
+      <div className="flex items-center space-x-2 text-sm text-slate-400">
+        <span>Active filters:</span>
+        <div className="flex flex-wrap gap-2">
+          {activeFilters.map((filter, index) => {
+            const fieldName = filterOptions.fields.find(f => f.id === filter.field)?.name || filter.field;
+            const operatorName = filterOptions.operators.find(o => o.id === filter.operator)?.name || filter.operator;
+            
+            return (
+              <span 
+                key={filter.id} 
+                className="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full border border-purple-500/30"
+              >
+                {fieldName} {operatorName} {filter.value}
+              </span>
+            );
+          })}
+          <button 
+            onClick={() => setActiveFilters([])}
+            className="px-2 py-1 bg-slate-700/50 text-slate-300 text-xs rounded-full hover:bg-slate-700 transition-colors duration-200"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
     );
   };
 
@@ -256,7 +381,10 @@ export const AgentManager = () => {
               className="bg-slate-800/50 border border-slate-700/50 rounded-lg pl-10 pr-4 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent w-64"
             />
           </div>
-          <button className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-2 text-slate-300 hover:text-white hover:border-slate-600/50 transition-all duration-200 flex items-center space-x-2">
+          <button 
+            onClick={() => setIsFilterModalOpen(true)}
+            className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-2 text-slate-300 hover:text-white hover:border-slate-600/50 transition-all duration-200 flex items-center space-x-2"
+          >
             <Filter className="w-5 h-5" />
             <span>Filter</span>
           </button>
@@ -266,8 +394,8 @@ export const AgentManager = () => {
           <button
             onClick={() => setViewMode('grid')}
             className={`p-2 rounded-lg transition-all duration-200 ${
-              viewMode === 'grid'
-                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+              viewMode === 'grid' 
+                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' 
                 : 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:text-white'
             }`}
             aria-label="Grid view"
@@ -287,6 +415,9 @@ export const AgentManager = () => {
           </button>
         </div>
       </div>
+
+      {/* Active Filters Display */}
+      {getActiveFiltersDisplay()}
 
       {/* Categories */}
       <div className="flex flex-wrap gap-3">
@@ -327,6 +458,7 @@ export const AgentManager = () => {
                   <button
                     className="p-2 bg-black/50 backdrop-blur-sm rounded-lg text-white hover:bg-black/70 transition-colors duration-200"
                     aria-label={`View details for ${agent.name}`}
+                    onClick={() => handleViewDetails(agent)}
                   >
                     <Eye className="w-4 h-4" />
                   </button>
@@ -474,6 +606,7 @@ export const AgentManager = () => {
                           </button>
                         )}
                         <button
+                          onClick={() => handleViewDetails(agent)}
                           className="p-2 text-slate-400 hover:text-white transition-colors duration-200"
                           aria-label={`View details for ${agent.name}`}
                         >
@@ -521,6 +654,27 @@ export const AgentManager = () => {
         }} 
         agent={selectedAgent} 
         onAgentUpdated={handleAgentUpdated} 
+      />
+
+      <AdvancedFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApplyFilters={applyAdvancedFilters}
+        initialFilters={activeFilters}
+        filterOptions={filterOptions}
+        entityType="agent"
+      />
+
+      <AgentDetailModal
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedAgent(null);
+        }}
+        agent={selectedAgent}
+        onDeploy={handleDeployClick}
+        onStop={handleStopAgent}
+        onConfigure={handleConfigClick}
       />
     </div>
   );

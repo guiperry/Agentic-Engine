@@ -8,11 +8,12 @@ import {
   BarChart3, 
   Settings,
   Brain,
-  X
+  X,
+  GitMerge // Added for Workflow Orchestrator
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-type ActiveView = 'dashboard' | 'agents' | 'capabilities' | 'targets' | 'orchestrator' | 'analytics' | 'settings';
+type ActiveView = 'dashboard' | 'agents' | 'capabilities' | 'targets' | 'orchestrator' | 'workflows' | 'analytics' | 'settings';
 
 interface SidebarProps {
   activeView: ActiveView;
@@ -26,7 +27,8 @@ const navigation = [
   { id: 'agents', name: 'NFT-Agents', icon: Bot, path: '/agents' },
   { id: 'capabilities', name: 'Capabilities', icon: Zap, path: '/capabilities' },
   { id: 'targets', name: 'Target Systems', icon: Target, path: '/targets' },
-  { id: 'orchestrator', name: 'Orchestrator', icon: GitBranch, path: '/orchestrator' },
+  { id: 'orchestrator', name: 'Inference', icon: GitBranch, path: '/orchestrator' },
+  { id: 'workflows', name: 'Workflows', icon: GitMerge, path: '/workflows' }, // Added new navigation item
   { id: 'analytics', name: 'Analytics', icon: BarChart3, path: '/analytics' },
   { id: 'settings', name: 'Settings', icon: Settings, path: '/settings' },
 ];

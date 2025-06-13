@@ -18,13 +18,14 @@ import (
 
 // SimpleAPIServer provides a simplified REST API for the inference engine
 type SimpleAPIServer struct {
-	db        *database.SimpleDomainDB
-	agentRepo *database.SimpleAgentRepository
-	router    *mux.Router
+	db                  *database.SimpleDomainDB
+	agentRepo           *database.SimpleAgentRepository
+	router              *mux.Router
 	httpServer          *http.Server // Renamed for clarity and to avoid conflict
 	port                int
 	dbPath              string
 	inferenceService    *inference.InferenceService
+	workflowService     *WorkflowOrchestrationService // Added workflow orchestration service
 	// inferenceServiceMux is used to protect inferenceService if it's initialized/accessed concurrently later
 	shutdownSignalChan  chan<- struct{} // Channel to signal main to shut down
 	inferenceServiceMux sync.Mutex      // To protect inferenceService initialization
@@ -57,12 +58,16 @@ func NewSimpleAPIServer(port int, dbPath string, shutdownSignal chan<- struct{})
 		return nil, fmt.Errorf("failed to initialize inference service: %w", err)
 	}
 
+	// Initialize workflow orchestration service
+	workflowService := NewWorkflowOrchestrationService()
+
 	apiServer := &SimpleAPIServer{
 		db:                 db,
 		agentRepo:          agentRepo,
 		port:               port,
 		dbPath:             dbPath,
 		inferenceService:   infService, // Store the inference service
+		workflowService:    workflowService, // Store the workflow service
 		router:             mux.NewRouter(), // Initialize the router for the APIServer instance
 		shutdownSignalChan: shutdownSignal,
 	}
@@ -100,6 +105,9 @@ func (s *SimpleAPIServer) setupRoutes() {
 	api.HandleFunc("/settings/api-keys", s.handleAPIKeys).Methods("POST")
 	api.HandleFunc("/inference/models", s.handleInferenceModels).Methods("GET")
 	api.HandleFunc("/inference/moa/{type}", s.handleMOASettings).Methods("POST")
+
+	// Register workflow orchestration routes
+	s.workflowService.RegisterHandlers(api)
 
 	// Static file serving for UI
 	s.router.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))

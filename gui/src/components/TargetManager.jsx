@@ -24,10 +24,16 @@ import {
   Shield,
   Lock
 } from 'lucide-react';
+import TargetSystemModal from './modals/TargetSystemModal';
+import AdvancedFilterModal from './modals/AdvancedFilterModal';
 
 export const TargetManager = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTarget, setSelectedTarget] = useState(null);
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [activeFilters, setActiveFilters] = useState([]);
 
   const categories = [
     { id: 'all', name: 'All Targets', icon: Server },
@@ -39,7 +45,7 @@ export const TargetManager = () => {
     { id: 'mobile', name: 'Mobile', icon: Smartphone },
   ];
 
-  const targets = [
+  const [targets, setTargets] = useState([
     {
       id: 1,
       name: 'Chrome Browser',
@@ -184,7 +190,76 @@ export const TargetManager = () => {
       restrictions: ['Read-only Access', 'No DDL Operations'],
       icon: Database
     }
-  ];
+  ]);
+
+  // Filter options for the advanced filter modal
+  const filterOptions = {
+    fields: [
+      { id: 'name', name: 'Name' },
+      { id: 'type', name: 'Type' },
+      { id: 'category', name: 'Category' },
+      { id: 'status', name: 'Status' },
+      { id: 'activeAgents', name: 'Active Agents' },
+      { id: 'security', name: 'Security Level' },
+      { id: 'platform', name: 'Platform' },
+      { id: 'version', name: 'Version' }
+    ],
+    operators: [
+      { id: 'equals', name: 'Equals' },
+      { id: 'not_equals', name: 'Not Equals' },
+      { id: 'contains', name: 'Contains' },
+      { id: 'not_contains', name: 'Not Contains' },
+      { id: 'greater_than', name: 'Greater Than' },
+      { id: 'less_than', name: 'Less Than' },
+      { id: 'starts_with', name: 'Starts With' },
+      { id: 'ends_with', name: 'Ends With' }
+    ]
+  };
+
+  // Apply advanced filters
+  const applyAdvancedFilters = (filters) => {
+    setActiveFilters(filters);
+  };
+
+  // Check if a target matches the advanced filters
+  const matchesAdvancedFilters = (target) => {
+    if (activeFilters.length === 0) return true;
+    
+    return activeFilters.every(filter => {
+      const { field, operator, value } = filter;
+      const targetValue = target[field];
+      
+      // Handle null/undefined values
+      if (targetValue === null || targetValue === undefined) {
+        return operator === 'not_equals' || operator === 'not_contains';
+      }
+      
+      // Convert to string for comparison
+      const targetValueStr = String(targetValue).toLowerCase();
+      const filterValueStr = String(value).toLowerCase();
+      
+      switch (operator) {
+        case 'equals':
+          return targetValueStr === filterValueStr;
+        case 'not_equals':
+          return targetValueStr !== filterValueStr;
+        case 'contains':
+          return targetValueStr.includes(filterValueStr);
+        case 'not_contains':
+          return !targetValueStr.includes(filterValueStr);
+        case 'greater_than':
+          return parseFloat(targetValueStr) > parseFloat(filterValueStr);
+        case 'less_than':
+          return parseFloat(targetValueStr) < parseFloat(filterValueStr);
+        case 'starts_with':
+          return targetValueStr.startsWith(filterValueStr);
+        case 'ends_with':
+          return targetValueStr.endsWith(filterValueStr);
+        default:
+          return true;
+      }
+    });
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -242,8 +317,81 @@ export const TargetManager = () => {
     const matchesSearch = target.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          target.category.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || target.type === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesAdvanced = matchesAdvancedFilters(target);
+    return matchesSearch && matchesCategory && matchesAdvanced;
   });
+
+  const handleAddTarget = () => {
+    setSelectedTarget(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditTarget = (target) => {
+    setSelectedTarget(target);
+    setIsModalOpen(true);
+  };
+
+  const handleTargetSaved = (targetData) => {
+    if (selectedTarget) {
+      // Update existing target
+      setTargets(prevTargets => 
+        prevTargets.map(target => 
+          target.id === targetData.id ? targetData : target
+        )
+      );
+    } else {
+      // Add new target
+      setTargets(prevTargets => [...prevTargets, targetData]);
+    }
+    setIsModalOpen(false);
+    setSelectedTarget(null);
+  };
+
+  const handleConnectDisconnect = (target) => {
+    const newStatus = target.status === 'connected' || target.status === 'monitoring' || target.status === 'limited' 
+      ? 'disconnected' 
+      : 'connected';
+    
+    setTargets(prevTargets => 
+      prevTargets.map(t => 
+        t.id === target.id 
+          ? { ...t, status: newStatus, lastActivity: 'just now' } 
+          : t
+      )
+    );
+  };
+
+  // Format the active filters for display
+  const getActiveFiltersDisplay = () => {
+    if (activeFilters.length === 0) return null;
+    
+    return (
+      <div className="flex items-center space-x-2 text-sm text-slate-400">
+        <span>Active filters:</span>
+        <div className="flex flex-wrap gap-2">
+          {activeFilters.map((filter, index) => {
+            const fieldName = filterOptions.fields.find(f => f.id === filter.field)?.name || filter.field;
+            const operatorName = filterOptions.operators.find(o => o.id === filter.operator)?.name || filter.operator;
+            
+            return (
+              <span 
+                key={filter.id} 
+                className="px-2 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30"
+              >
+                {fieldName} {operatorName} {filter.value}
+              </span>
+            );
+          })}
+          <button 
+            onClick={() => setActiveFilters([])}
+            className="px-2 py-1 bg-slate-700/50 text-slate-300 text-xs rounded-full hover:bg-slate-700 transition-colors duration-200"
+          >
+            Clear
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -254,7 +402,10 @@ export const TargetManager = () => {
           <p className="text-slate-400">Connect and manage target systems where your NFT-Agents can operate.</p>
         </div>
         <div className="mt-4 lg:mt-0">
-          <button className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 flex items-center space-x-2">
+          <button 
+            onClick={handleAddTarget}
+            className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 flex items-center space-x-2"
+          >
             <Plus className="w-5 h-5" />
             <span>Add Target</span>
           </button>
@@ -273,11 +424,17 @@ export const TargetManager = () => {
             className="w-full bg-slate-800/50 border border-slate-700/50 rounded-lg pl-10 pr-4 py-3 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
           />
         </div>
-        <button className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-3 text-slate-300 hover:text-white hover:border-slate-600/50 transition-all duration-200 flex items-center space-x-2">
+        <button 
+          onClick={() => setIsFilterModalOpen(true)}
+          className="bg-slate-800/50 border border-slate-700/50 rounded-lg px-4 py-3 text-slate-300 hover:text-white hover:border-slate-600/50 transition-all duration-200 flex items-center space-x-2"
+        >
           <Filter className="w-5 h-5" />
           <span>Filter</span>
         </button>
       </div>
+
+      {/* Active Filters Display */}
+      {getActiveFiltersDisplay()}
 
       {/* Categories */}
       <div className="flex flex-wrap gap-3">
@@ -305,7 +462,7 @@ export const TargetManager = () => {
         {filteredTargets.map((target) => {
           const Icon = target.icon;
           return (
-            <div key={target.id} className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300">
+            <div key={target.id} className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300" role="article">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center space-x-3">
                   <div className="p-3 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-lg border border-purple-500/30">
@@ -397,17 +554,26 @@ export const TargetManager = () => {
               
               <div className="flex items-center space-x-3">
                 {target.status === 'disconnected' ? (
-                  <button className="flex-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 border border-green-500/30 text-white py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2">
+                  <button 
+                    onClick={() => handleConnectDisconnect(target)}
+                    className="flex-1 bg-gradient-to-r from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 border border-green-500/30 text-white py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                  >
                     <Play className="w-4 h-4" />
                     <span>Connect</span>
                   </button>
                 ) : (
-                  <button className="flex-1 bg-gradient-to-r from-red-500/20 to-orange-500/20 hover:from-red-500/30 hover:to-orange-500/30 border border-red-500/30 text-white py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2">
+                  <button 
+                    onClick={() => handleConnectDisconnect(target)}
+                    className="flex-1 bg-gradient-to-r from-red-500/20 to-orange-500/20 hover:from-red-500/30 hover:to-orange-500/30 border border-red-500/30 text-white py-2 px-4 rounded-lg transition-all duration-200 flex items-center justify-center space-x-2"
+                  >
                     <Pause className="w-4 h-4" />
                     <span>Disconnect</span>
                   </button>
                 )}
-                <button className="bg-slate-700/50 border border-slate-600/50 text-slate-300 hover:text-white hover:border-slate-500/50 p-2 rounded-lg transition-all duration-200">
+                <button 
+                  onClick={() => handleEditTarget(target)}
+                  className="bg-slate-700/50 border border-slate-600/50 text-slate-300 hover:text-white hover:border-slate-500/50 p-2 rounded-lg transition-all duration-200"
+                >
                   <Settings className="w-4 h-4" />
                 </button>
                 <button className="bg-slate-700/50 border border-slate-600/50 text-slate-300 hover:text-white hover:border-slate-500/50 p-2 rounded-lg transition-all duration-200">
@@ -418,6 +584,27 @@ export const TargetManager = () => {
           );
         })}
       </div>
+
+      {/* Target System Modal */}
+      <TargetSystemModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setSelectedTarget(null);
+        }}
+        target={selectedTarget}
+        onTargetSaved={handleTargetSaved}
+      />
+
+      {/* Advanced Filter Modal */}
+      <AdvancedFilterModal
+        isOpen={isFilterModalOpen}
+        onClose={() => setIsFilterModalOpen(false)}
+        onApplyFilters={applyAdvancedFilters}
+        initialFilters={activeFilters}
+        filterOptions={filterOptions}
+        entityType="target"
+      />
     </div>
   );
 };
