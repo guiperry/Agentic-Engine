@@ -72,7 +72,7 @@ Added React Router to enable navigation between different views.
 
 ### Medium Priority Items:
 1. Target System Configuration
-2. MCP Server Management
+2. MCP Capability Management
 3. Advanced Filter System
 4. Agent Detail Views
 5. Data Engineering Architectural Interface

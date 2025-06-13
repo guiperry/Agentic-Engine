@@ -111,10 +111,8 @@ func NewGeminiProvider(apiKey, model string, extraHeaders map[string]string) pro
 	}
 
 	// Copy provided extraHeaders
-	if extraHeaders != nil {
-		for k, v := range extraHeaders {
-			provider.extraHeaders[k] = v
-		}
+	for k, v := range extraHeaders {
+		provider.extraHeaders[k] = v
 	}
 
 	// --- Read Endpoint from Environment Variable ---
@@ -478,7 +476,7 @@ func (p *GeminiProvider) GenerateContent(ctx context.Context, prompt string) (st
 	// The gollm library should handle the actual HTTP call using Endpoint(), Headers(), PrepareRequest(), ParseResponse().
 	// If this method IS called, it means something is using it directly.
 	// For now, return an error or a placeholder.
-	return "", fmt.Errorf("direct call to GeminiProvider.GenerateContent is not the standard gollm flow")
+	//return "", fmt.Errorf("direct call to GeminiProvider.GenerateContent is not the standard gollm flow")
 	/*
 
 		log.Printf("GeminiProvider (GenerateContent): Constructed URL: %s", fullURL)
@@ -553,7 +551,7 @@ func (p *GeminiProvider) GenerateContentFromMessages(ctx context.Context, messag
 	log.Printf("GeminiProvider (GenerateContentFromMessages): Constructed URL: %s", fullURL)
 
 	// --- REMOVED: Manual HTTP Request Logic ---
-	return "", fmt.Errorf("direct call to GeminiProvider.GenerateContentFromMessages is not the standard gollm flow")
+	// Keep chat slice building for API contract even though unused in this implementation
 	/*
 		p.logger.Debug("GeminiProvider: Sending HTTP request (messages)", "url", fullURL, "body_len", len(reqBytes))
 
@@ -581,7 +579,7 @@ func (p *GeminiProvider) GenerateContentFromMessages(ctx context.Context, messag
 		}
 		genModel.SetMaxOutputTokens(int32(p.maxTokens))
 	*/
-	p.mutex.Unlock()
+	//p.mutex.Unlock()
 
 	// Convert messages to Gemini format
 	var chat []*genai.Content // Use pointer slice
@@ -601,6 +599,7 @@ func (p *GeminiProvider) GenerateContentFromMessages(ctx context.Context, messag
 			Parts: []genai.Part{genai.Text(msg.Content)},
 		}
 		chat = append(chat, content)
+		p.logger.Debug("Added message to chat", "role", content.Role, "content_length", len(msg.Content), "chat_length", len(chat))
 	}
 
 	// HTTP request logic removed - handled by gollm
@@ -623,8 +622,8 @@ func (p *GeminiProvider) StreamContent(ctx context.Context, prompt string) (chan
 		// parsing each Server-Sent Event (SSE) chunk.
 		// For now, return an error indicating it's not implemented.
 		errChan <- fmt.Errorf("streaming not yet implemented for manual Gemini HTTP provider")
-		return
-		p.mutex.Lock()
+		//return
+		//p.mutex.Lock()
 		// if p.temperature != nil {
 		// 	genModel.SetTemperature(*p.temperature) // undefined: genModel
 		// }
@@ -635,7 +634,7 @@ func (p *GeminiProvider) StreamContent(ctx context.Context, prompt string) (chan
 		// 	genModel.SetTopK(*p.topK) // undefined: genModel
 		// }
 		// genModel.SetMaxOutputTokens(int32(p.maxTokens)) // undefined: genModel
-		p.mutex.Unlock()
+		//p.mutex.Unlock()
 
 	}()
 

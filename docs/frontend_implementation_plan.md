@@ -121,16 +121,38 @@ This document outlines the detailed implementation plan for missing front-end fu
 - Test connections
 - Manage permissions
 
-### 6. **MCP Server Management**
+### 6. **MCP Capability Management**
 **Status**: ❌ Not Implemented  
 **Priority**: Important  
 **Estimated Effort**: 2-3 days  
 
 **Requirements**:
-- Connect/disconnect MCP servers
-- Server configuration
-- Capability discovery
-- Health monitoring
+- KNIRVCHAIN Service implementation
+- Capability ingestion and management
+- Automated MCP server discovery and connection
+- Health monitoring and diagnostics
+- Capability versioning and compatibility checks
+
+**Implementation Steps**:
+1. Create `MCPCapabilityManager.jsx` component
+2. Integrate KNIRVCHAIN SDK for capability ingestion
+3. Implement capability browser and selection interface
+4. Add automated MCP server management features
+5. Create health monitoring dashboard
+6. Implement capability version control
+
+**Technical Components**:
+- **KNIRVCHAIN SDK Integration**: Utilize the included SDK to handle capability ingestion
+- **Automated Discovery**: Leverage SDK's built-in MCP server management functionality
+- **Capability Registry**: Create UI for browsing and managing available capabilities
+- **Health Metrics**: Implement real-time monitoring of capability performance
+- **Version Control**: Add capability versioning and compatibility verification
+
+**API Endpoints Needed**:
+- `GET /api/v1/capabilities` (Need to create)
+- `POST /api/v1/capabilities/register` (Need to create)
+- `GET /api/v1/capabilities/health` (Need to create)
+- `PUT /api/v1/capabilities/version` (Need to create)
 
 ### 7. **Advanced Filter System**
 **Status**: ❌ Not Implemented  
@@ -232,16 +254,51 @@ This document outlines the detailed implementation plan for missing front-end fu
 - Integrate with tool ecosystem for enhanced capabilities
 - Implement built-in evaluation mechanisms
 
+### 11. **Web Connections**
+**Status**: ❌ Not Implemented  
+**Priority**: Important  
+**Estimated Effort**: 2-3 days  
+
+**Requirements**:
+- Integration with third-party services from established corporate brands
+- Authentication and authorization via picaos.com auth tool
+- Secure credential management
+- Connection status monitoring
+- OAuth 2.0 flow implementation
+- API key management
+
+**Implementation Steps**:
+1. Create `WebConnectionsManager.jsx` component
+2. Implement OAuth 2.0 authorization flows
+3. Add API key management interface
+4. Create connection status dashboard
+5. Implement secure credential storage integration
+6. Add connection testing functionality
+
+**Technical Components**:
+- **Picaos.com Auth Integration**: Utilize backend auth tool for secure third-party connections
+- **OAuth Handler**: Implement standard OAuth 2.0 flows for various service providers
+- **Credential Vault**: Create secure interface for managing API keys and tokens
+- **Connection Registry**: Develop UI for managing and monitoring active connections
+- **Service Discovery**: Implement automated service capability detection
+
+**API Endpoints Needed**:
+- `GET /api/v1/web-connections` (Need to create)
+- `POST /api/v1/web-connections` (Need to create)
+- `DELETE /api/v1/web-connections/{id}` (Need to create)
+- `GET /api/v1/web-connections/oauth/callback` (Need to create)
+- `POST /api/v1/web-connections/test` (Need to create)
+
 ---
 
 ## � **LOW PRIORITY IMPLEMENTATIONS**
 
-### 11. **Context Menus**
+### 12. **Context Menus**
 **Status**: ❌ Not Implemented  
 **Priority**: Nice to Have  
 **Estimated Effort**: 1 day  
 
-### 12. **Security Settings**
+### 13. **Security Settings**
 **Status**: ❌ Not Implemented  
 **Priority**: Nice to Have  
 **Estimated Effort**: 2-3 days  

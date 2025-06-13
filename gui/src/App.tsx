@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Sidebar } from './components/Sidebar';
 import { Dashboard } from './components/Dashboard';
@@ -14,6 +14,33 @@ type ActiveView = 'dashboard' | 'agents' | 'capabilities' | 'targets' | 'orchest
 function App() {
   const [activeView, setActiveView] = useState<ActiveView>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  useEffect(() => {
+    const handleUnload = () => {
+      // navigator.sendBeacon is designed for this use case.
+      // It sends a POST request with the specified data.
+      // The browser attempts to send it even if the page is unloading.
+      if (navigator.sendBeacon) {
+        // Ensure the URL is correct for your API endpoint
+        const status = navigator.sendBeacon('/api/shutdown', ''); // Empty body is fine
+        console.log(`Shutdown signal sent to backend via sendBeacon. Status: ${status}`);
+      } else {
+        // Fallback for older browsers (less reliable during unload)
+        console.warn('navigator.sendBeacon not supported, falling back to fetch (less reliable for unload).');
+        fetch('/api/shutdown', {
+          method: 'POST',
+          keepalive: true, // Important for fetch during unload
+          // No body needed if your backend doesn't expect one for this endpoint
+        }).catch(err => console.error('Error sending shutdown signal via fetch:', err));
+      }
+    };
+
+    window.addEventListener('unload', handleUnload);
+
+    return () => {
+      window.removeEventListener('unload', handleUnload);
+    };
+  }, []); // Empty dependency array ensures this runs once on mount and cleans up on unmount
 
   return (
     <Router>

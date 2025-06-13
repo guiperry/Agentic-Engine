@@ -75,7 +75,7 @@ func init() {
 
 // NewDeepseekProvider creates a new Deepseek provider instance.
 func NewDeepseekProvider(apiKey, model string, extraHeaders map[string]string) providers.Provider {
-	log.Printf("[DEBUG] NewDeepseekProvider called! apiKey: %t, model: %s", apiKey != "", model)
+	log.Printf("[DEBUG] NewDeepseekProvider called! apiKey present: %t, model: %s", apiKey != "", model)
 	provider := &DeepseekProvider{
 		apiKey:       apiKey,
 		model:        model,
@@ -90,10 +90,8 @@ func NewDeepseekProvider(apiKey, model string, extraHeaders map[string]string) p
 		log.Printf("Deepseek model defaulting to %s", provider.model)
 	}
 	// Copy provided extraHeaders
-	if extraHeaders != nil {
-		for k, v := range extraHeaders {
-			provider.extraHeaders[k] = v
-		}
+	for k, v := range extraHeaders {
+		provider.extraHeaders[k] = v
 	}
 	log.Printf("NewDeepseekProvider created: model=%s", provider.model)
 	return provider
@@ -233,31 +231,29 @@ func (p *DeepseekProvider) PrepareRequest(prompt string, options map[string]inte
 	}
 
 	// Handle Response Format (JSON Schema) - Assuming Deepseek supports it like OpenAI
-	if schemaVal, ok := options["_schema_internal"].(interface{}); ok {
-		if schemaPtr, ok := schemaVal.(*jsonschema.Schema); ok {
-			req.ResponseFormat = &struct {
-				Type       string `json:"type"`
-				JSONSchema *struct {
-					Name   string             `json:"name"`
-					Schema *jsonschema.Schema `json:"schema"`
-					Strict bool               `json:"strict,omitempty"`
-				} `json:"json_schema,omitempty"`
+	if schemaPtr, ok := options["_schema_internal"].(*jsonschema.Schema); ok {
+		req.ResponseFormat = &struct {
+			Type       string `json:"type"`
+			JSONSchema *struct {
+				Name   string             `json:"name"`
+				Schema *jsonschema.Schema `json:"schema"`
+				Strict bool               `json:"strict,omitempty"`
+			} `json:"json_schema,omitempty"`
+		}{
+			Type: "json_object", // OpenAI uses json_object, assume Deepseek does too
+			// Deepseek might not use the nested json_schema structure, adjust if needed
+			// For now, assume it does for compatibility testing
+			JSONSchema: &struct {
+				Name   string             `json:"name"`
+				Schema *jsonschema.Schema `json:"schema"`
+				Strict bool               `json:"strict,omitempty"`
 			}{
-				Type: "json_object", // OpenAI uses json_object, assume Deepseek does too
-				// Deepseek might not use the nested json_schema structure, adjust if needed
-				// For now, assume it does for compatibility testing
-				JSONSchema: &struct {
-					Name   string             `json:"name"`
-					Schema *jsonschema.Schema `json:"schema"`
-					Strict bool               `json:"strict,omitempty"`
-				}{
-					Name:   "structured_output",
-					Schema: schemaPtr,
-				},
-			}
-		} else {
-			p.logger.Error("Schema provided in options is not *jsonschema.Schema", "type", fmt.Sprintf("%T", schemaVal))
+				Name:   "structured_output",
+				Schema: schemaPtr,
+			},
 		}
+	} else if _, ok := options["_schema_internal"]; ok {
+		p.logger.Error("Schema provided in options is not *jsonschema.Schema")
 	}
 
 	p.logger.Debug("Preparing Deepseek request", "provider", p.Name(), "model", req.Model, "streaming", req.Stream)
@@ -368,21 +364,27 @@ func (p *DeepseekProvider) PrepareRequestWithMessages(messages []gollm_types.Mem
 	if stream, ok := options["stream"].(bool); ok && stream {
 		req.Stream = true
 	}
-	if schemaVal, ok := options["_schema_internal"].(interface{}); ok {
-		if schemaPtr, ok := schemaVal.(*jsonschema.Schema); ok {
-			req.ResponseFormat = &struct {
-				Type       string `json:"type"`
-				JSONSchema *struct {
-					Name   string             `json:"name"`
-					Schema *jsonschema.Schema `json:"schema"`
-					Strict bool               `json:"strict,omitempty"`
-				} `json:"json_schema,omitempty"`
-			}{Type: "json_object", JSONSchema: &struct {
+	if schemaPtr, ok := options["_schema_internal"].(*jsonschema.Schema); ok {
+		req.ResponseFormat = &struct {
+			Type       string `json:"type"`
+			JSONSchema *struct {
 				Name   string             `json:"name"`
 				Schema *jsonschema.Schema `json:"schema"`
 				Strict bool               `json:"strict,omitempty"`
-			}{Name: "structured_output", Schema: schemaPtr}}
+			} `json:"json_schema,omitempty"`
+		}{
+			Type: "json_object",
+			JSONSchema: &struct {
+				Name   string             `json:"name"`
+				Schema *jsonschema.Schema `json:"schema"`
+				Strict bool               `json:"strict,omitempty"`
+			}{
+				Name:   "structured_output",
+				Schema: schemaPtr,
+			},
 		}
+	} else if _, ok := options["_schema_internal"]; ok {
+		p.logger.Error("Schema provided in options is not *jsonschema.Schema")
 	}
 
 	p.logger.Debug("Preparing Deepseek request with messages", "provider", p.Name(), "model", req.Model, "num_msgs", len(req.Messages))

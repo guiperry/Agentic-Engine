@@ -19,10 +19,13 @@ import (
 	"github.com/joho/godotenv"
 )
 
+var staticGUIServer *http.Server // To manage the static GUI server's lifecycle
+
 func main() {
 	// Command line flags
 	var production = flag.Bool("production", false, "Run in production mode (serve static files)")
 	var guiPort = flag.Int("gui-port", 3000, "Port for GUI server")
+	var cleanDB = flag.Bool("clean-db", false, "Clean the database directory before starting")
 	flag.Parse()
 
 	// Load environment variables
@@ -36,8 +39,21 @@ func main() {
 		log.Println("🚀 Starting Inference Engine in DEVELOPMENT mode...")
 	}
 
+	dbPath := "./data/inference_engine.db"
+
+	if *cleanDB {
+		log.Printf("🧹 Attempting to clean database directory: %s", dbPath)
+		if err := os.RemoveAll(dbPath); err != nil {
+			log.Printf("⚠️  Warning: Failed to remove database directory %s: %v. Proceeding anyway.", dbPath, err)
+		} else {
+			log.Printf("✅ Database directory %s cleaned successfully.", dbPath)
+		}
+	}
+
+	shutdownFromAPIChan := make(chan struct{}, 1) // Channel to signal shutdown from API
+
 	// Start API server in a goroutine
-	apiServer, err := api.NewSimpleAPIServer(8080, "./data/inference_engine.db")
+	apiServer, err := api.NewSimpleAPIServer(8080, dbPath, shutdownFromAPIChan)
 	if err != nil {
 		log.Fatalf("Failed to create API server: %v", err)
 	}
@@ -59,7 +75,11 @@ func main() {
 	go func() {
 		if *production {
 			// Production mode: serve static files
-			if err := serveStaticGUI(*guiPort); err != nil {
+			if err := serveStaticGUI(*guiPort, &staticGUIServer); err != nil && err != http.ErrServerClosed {
+				log.Printf("Static GUI server error: %v", err)
+				// Optionally trigger shutdown if GUI server fails to start
+				// close(shutdownFromAPIChan)
+			} else if err == http.ErrServerClosed {
 				log.Printf("Static GUI server error: %v", err)
 			}
 		} else {
@@ -89,12 +109,24 @@ func main() {
 	// Handle graceful shutdown
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
-	<-sigChan
+
+	select {
+	case <-sigChan:
+		log.Println("🛑 Received OS signal. Initiating shutdown...")
+	case <-shutdownFromAPIChan:
+		log.Println("🛑 Received shutdown signal from frontend. Initiating shutdown...")
+	}
 
 	log.Println("🛑 Shutting down servers...")
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
+	if staticGUIServer != nil {
+		log.Println("Shutting down static GUI server...")
+		if err := staticGUIServer.Shutdown(ctx); err != nil {
+			log.Printf("Error stopping static GUI server: %v", err)
+		}
+	}
 	if err := apiServer.Stop(ctx); err != nil {
 		log.Printf("Error stopping API server: %v", err)
 	}
@@ -153,25 +185,24 @@ func openBrowser(url string) error {
 }
 
 // serveStaticGUI serves the built React GUI (alternative to dev server)
-func serveStaticGUI(port int) error {
+func serveStaticGUI(port int, serverPtr **http.Server) error {
 	guiDistDir := "./gui/dist"
 
 	// Check if dist directory exists
 	if _, err := os.Stat(guiDistDir); os.IsNotExist(err) {
 		return fmt.Errorf("GUI dist directory not found: %s. Run 'npm run build' in the gui directory first", guiDistDir)
 	}
-
-	// Create a file server handler for static assets
 	fs := http.FileServer(http.Dir(guiDistDir))
+	mux := http.NewServeMux()
 
 	// Create a custom handler to support client-side routing
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		// Check if the requested file exists
 		path := filepath.Join(guiDistDir, r.URL.Path)
-		_, err := os.Stat(path)
+		statInfo, err := os.Stat(path)
 
 		// If the file exists, serve it directly
-		if err == nil {
+		if err == nil && !statInfo.IsDir() {
 			fs.ServeHTTP(w, r)
 			return
 		}
@@ -181,5 +212,12 @@ func serveStaticGUI(port int) error {
 	})
 
 	log.Printf("🎨 Serving static GUI on port %d...", port)
-	return http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+	server := &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: mux,
+	}
+	*serverPtr = server // Assign the server instance to the provided pointer
+
+	err := server.ListenAndServe()
+	return err
 }

@@ -163,7 +163,7 @@ func (d *DelegatorService) executeGenerationWithRetry(ctx context.Context, model
 
 	// Estimate tokens using the designated model for limit checking
 	estimatedTokens := estimateTotalTokens(messages, d.tokenLimitCheckModel)
-	log.Printf("DelegatorService (%s): Estimated tokens for request: %d (Limit: %d, Check Model: %s). Requested Model: '%s'",
+	log.Printf("DelegatorService (%s): Estimated tokens for request: %d (Limit: %d, Check Model: %s)",
 		operationName, estimatedTokens, d.tokenLimitThreshold, d.tokenLimitCheckModel) // Log estimation, but don't bypass primary based on it.
 
 	// --- ADDED: Proactive Chunking Check ---
@@ -227,10 +227,13 @@ func (d *DelegatorService) executeGenerationWithRetry(ctx context.Context, model
 			if listNum == 0 {
 				listName = "Primary"
 				currentAttemptList = d.primaryAttempts
-			} else if listNum == 1 && lastError != nil { // Only switch to fallback if primary failed
+			} else if listNum == 1 && lastError != nil && d.shouldFallbackOnError(lastError) { // Only switch to fallback if primary failed and error warrants it
 				listName = "Fallback"
-				log.Printf("DelegatorService (%s): Primary attempts failed. Switching to fallback attempts.", operationName)
+				log.Printf("DelegatorService (%s): Primary attempts failed with fallback-allowed error: %v. Switching to fallback attempts.", operationName, lastError)
 				currentAttemptList = d.fallbackAttempts
+			} else if listNum == 1 && lastError != nil {
+				log.Printf("DelegatorService (%s): Primary attempts failed but error doesn't warrant fallback: %v", operationName, lastError)
+				break // Don't try fallback for this type of error
 			}
 		} else if listNum == 1 { // This case should not be hit if specificModelRequested is true due to the break above
 			break // Already tried fallback, don't try primary

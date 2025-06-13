@@ -330,7 +330,7 @@ func (cm *ContextManager) ProcessLargePrompt(ctx context.Context, llm TextGenera
 
 // processInParallel processes chunks in parallel for speed.
 // Accepts the TextGenerator (LLM instance).
-func (cm *ContextManager) processInParallel(ctx context.Context, llm TextGenerator, chunks []string, instructionPerChunk string) (string, error) {
+func (cm *ContextManager) processInParallel(_ context.Context, llm TextGenerator, chunks []string, instructionPerChunk string) (string, error) {
 	var wg sync.WaitGroup
 	var lastError error
 	var errMutex sync.Mutex                     // To safely write to lastError from goroutines
@@ -373,7 +373,7 @@ func (cm *ContextManager) processInParallel(ctx context.Context, llm TextGenerat
 
 // processSequentially processes chunks in sequence, passing context between them.
 // Accepts the TextGenerator (LLM instance).
-func (cm *ContextManager) processSequentially(ctx context.Context, llm TextGenerator, chunks []string, instructionPerChunk string) (string, error) {
+func (cm *ContextManager) processSequentially(_ context.Context, llm TextGenerator, chunks []string, instructionPerChunk string) (string, error) {
 	// Instead of using pre-split chunks, we'll manage the text dynamically.
 	// Join the pre-split chunks back together for this approach.
 	// A better long-term solution might be to pass the raw text here.
@@ -389,13 +389,22 @@ func (cm *ContextManager) processSequentially(ctx context.Context, llm TextGener
 		// Estimate tokens for the base instruction and current summary
 		instructionTokens := estimateTokens(instructionPerChunk, cm.modelName)
 		summaryTokens := estimateTokens(previousOutputSummary, cm.modelName)
-		contextTokens := instructionTokens + summaryTokens
-		var chunkPrompt string
-		var currentChunk string
+		var (
+			chunkPrompt   string
+			currentChunk  string
+			contextTokens int
+		)
 
 		// Calculate tokens used by instruction and summary
-		summaryTokens = estimateTokens(previousOutputSummary, cm.modelName) // Use =
-		contextTokens = instructionTokens + summaryTokens                   // Use =
+		contextTokens = instructionTokens + summaryTokens
+		
+		// Log token distribution for debugging
+		log.Printf("ContextManager: Chunk %d token budget - Instruction: %d, Summary: %d, Context: %d, Content budget: %d",
+			chunkIndex,
+			instructionTokens,
+			summaryTokens,
+			contextTokens,
+			cm.maxChunkSize - contextTokens - 50)
 
 		contentBudget := cm.maxChunkSize - contextTokens - 50
 		if contentBudget <= 0 {

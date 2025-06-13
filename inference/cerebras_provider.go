@@ -205,10 +205,8 @@ func NewCerebrasProvider(apiKey, model string, extraHeaders map[string]string) p
 		provider.model = "llama-4-scout-17b-16e-instruct"
 	}
 	// Copy provided extraHeaders
-	if extraHeaders != nil {
-		for k, v := range extraHeaders {
-			provider.extraHeaders[k] = v
-		}
+	for k, v := range extraHeaders {
+		provider.extraHeaders[k] = v
 	}
 	log.Printf("NewCerebrasProvider created: model=%s", provider.model) // Add log
 	return provider
@@ -945,10 +943,10 @@ func convertToCerebrasMessages(messages []Message) []CerebrasMessage {
 // It takes configuration parameters for each request.
 func (c *CerebrasClient) MakeChatCompletionRequest(ctx context.Context, apiKey, model string, messages []Message, maxTokens int) (string, error) {
 	if apiKey == "" {
-		return "", errors.New("Cerebras API key is required")
+		return "", errors.New("cerebras API key is required")
 	}
 	if model == "" {
-		return "", errors.New("Cerebras model is required")
+		return "", errors.New("cerebras model is required")
 	}
 	if len(messages) == 0 {
 		return "", errors.New("messages cannot be empty")
@@ -1007,7 +1005,7 @@ func (c *CerebrasClient) MakeChatCompletionRequest(ctx context.Context, apiKey, 
 	// Check for non-OK status code
 	if resp.StatusCode != http.StatusOK {
 		log.Printf("Cerebras API Error Response Body: %s", string(body))
-		return "", fmt.Errorf("Cerebras API request failed with status %d: %s", resp.StatusCode, string(body))
+		return "", fmt.Errorf("cerebras API request failed with status %d: %s", resp.StatusCode, string(body))
 	}
 
 	// Parse the response

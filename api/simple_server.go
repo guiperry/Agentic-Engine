@@ -8,8 +8,10 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"sync"
 
 	"Inference_Engine/database"
+	"Inference_Engine/inference"
 
 	"github.com/gorilla/mux"
 )
@@ -19,13 +21,20 @@ type SimpleAPIServer struct {
 	db        *database.SimpleDomainDB
 	agentRepo *database.SimpleAgentRepository
 	router    *mux.Router
-	server    *http.Server
+	httpServer          *http.Server // Renamed for clarity and to avoid conflict
+	port                int
+	dbPath              string
+	inferenceService    *inference.InferenceService
+	// inferenceServiceMux is used to protect inferenceService if it's initialized/accessed concurrently later
+	shutdownSignalChan  chan<- struct{} // Channel to signal main to shut down
+	inferenceServiceMux sync.Mutex      // To protect inferenceService initialization
 }
 
 // NewSimpleAPIServer creates a new simple API server
-func NewSimpleAPIServer(port int, persistencePath string) (*SimpleAPIServer, error) {
+func NewSimpleAPIServer(port int, dbPath string, shutdownSignal chan<- struct{}) (*SimpleAPIServer, error) {
+	log.Println("Initializing SimpleAPIServer...") // TODO: Remove this line
 	// Initialize database
-	db, err := database.NewSimpleDomainDB(persistencePath)
+	db, err := database.NewSimpleDomainDB(dbPath) // Use the passed dbPath
 	if err != nil {
 		return nil, fmt.Errorf("failed to initialize database: %w", err)
 	}
@@ -33,28 +42,36 @@ func NewSimpleAPIServer(port int, persistencePath string) (*SimpleAPIServer, err
 	// Get or create agents collection
 	agentCollection, err := db.GetOrCreateCollection("agents")
 	if err != nil {
+		db.Close() // Clean up database if collection creation fails
 		return nil, fmt.Errorf("failed to create agents collection: %w", err)
 	}
 
 	// Initialize repositories
 	agentRepo := database.NewSimpleAgentRepository(agentCollection)
 
-	// Create router
-	router := mux.NewRouter()
-
-	// Create server
-	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", port),
-		Handler:      router,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
+	// Initialize inference service
+	// Assuming NewInferenceService takes the database. Adjust if its signature is different.
+	infService, err := inference.NewInferenceService(db)
+	if err != nil {
+		db.Close() // Clean up database if inference service init fails
+		return nil, fmt.Errorf("failed to initialize inference service: %w", err)
 	}
 
 	apiServer := &SimpleAPIServer{
-		db:        db,
-		agentRepo: agentRepo,
-		router:    router,
-		server:    server,
+		db:                 db,
+		agentRepo:          agentRepo,
+		port:               port,
+		dbPath:             dbPath,
+		inferenceService:   infService, // Store the inference service
+		router:             mux.NewRouter(), // Initialize the router for the APIServer instance
+		shutdownSignalChan: shutdownSignal,
+	}
+
+	apiServer.httpServer = &http.Server{
+		Addr:         fmt.Sprintf(":%d", apiServer.port),
+		Handler:      apiServer.router, // Use the apiServer's router
+		ReadTimeout:  15 * time.Second,
+		WriteTimeout: 15 * time.Second,
 	}
 
 	// Setup routes
@@ -86,7 +103,34 @@ func (s *SimpleAPIServer) setupRoutes() {
 
 	// Static file serving for UI
 	s.router.PathPrefix("/").Handler(http.FileServer(http.Dir("./static/")))
+
+	//Shutdown
+	s.router.HandleFunc("/api/shutdown", s.handleShutdownRequest).Methods("POST", "OPTIONS")
 }
+
+func (s *SimpleAPIServer) handleShutdownRequest(w http.ResponseWriter, r *http.Request) {
+	if r.Method == "OPTIONS" { // Handle preflight
+		w.Header().Set("Access-Control-Allow-Origin", "*") // Adjust for production
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+	w.Header().Set("Access-Control-Allow-Origin", "*") // Adjust for production
+
+	log.Println("API server received shutdown request from frontend.")
+	if s.shutdownSignalChan != nil {
+		select {
+		case s.shutdownSignalChan <- struct{}{}:
+			log.Println("Shutdown signal sent to main application.")
+		default:
+			log.Println("Shutdown signal channel is full or nil, possibly already signaled.")
+		}
+	}
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintln(w, "Shutdown signal received by API server.")
+}
+
 
 // corsMiddleware adds CORS headers
 func (s *SimpleAPIServer) corsMiddleware(next http.Handler) http.Handler {
@@ -106,14 +150,17 @@ func (s *SimpleAPIServer) corsMiddleware(next http.Handler) http.Handler {
 
 // Start starts the API server
 func (s *SimpleAPIServer) Start() error {
-	log.Printf("Starting Simple API server on %s", s.server.Addr)
-	return s.server.ListenAndServe()
+	log.Printf("Starting Simple API server on %s", s.httpServer.Addr)
+	return s.httpServer.ListenAndServe()
 }
 
 // Stop stops the API server
 func (s *SimpleAPIServer) Stop(ctx context.Context) error {
 	log.Println("Stopping Simple API server...")
-	return s.server.Shutdown(ctx)
+	if s.httpServer == nil {
+		return nil // Or return an error if server was not initialized
+	}
+	return s.httpServer.Shutdown(ctx)
 }
 
 // Health check handler

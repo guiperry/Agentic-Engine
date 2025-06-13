@@ -12,6 +12,7 @@ import (
 
 	// Use gollm types for messages if needed here, or keep them internal to delegator
 
+	"Inference_Engine/database"
 	"github.com/guiperry/gollm_cerebras/config"
 	"github.com/guiperry/gollm_cerebras/llm"
 	gollm "github.com/guiperry/gollm_cerebras"
@@ -52,7 +53,7 @@ type InferenceService struct {
 }
 
 // NewInferenceService creates a new instance of InferenceService.
-func NewInferenceService() *InferenceService {
+func NewInferenceService(db *database.SimpleDomainDB) (*InferenceService, error) {
 	return &InferenceService{
 		// Initialize slices
 		primaryAttempts:  make([]LLMAttempt, 0),
@@ -62,7 +63,7 @@ func NewInferenceService() *InferenceService {
 			ChunkByTokenCount,                        // Use token count for better splitting
 			WithProcessingMode(SequentialProcessing), // Default to sequential
 		),
-	}
+	}, nil
 }
 
 // Start configures the service with both proxy and base providers and the delegator.
