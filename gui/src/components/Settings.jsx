@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Settings as SettingsIcon,
   User,
@@ -21,8 +21,13 @@ import {
   Eye,
   EyeOff,
   Copy,
-  Check
+  Check,
+  Users
 } from 'lucide-react';
+import UserProfile from './UserProfile';
+import UserManagement from './UserManagement';
+import APITokens from './APITokens';
+import { useAuth } from './AuthContext';
 
 export const Settings = () => {
   const [activeTab, setActiveTab] = useState('account');
@@ -57,6 +62,8 @@ export const Settings = () => {
     primaryModel: '',
     fallbackModel: ''
   });
+  
+  const { user, hasPermission } = useAuth();
 
   const tabs = [
     { id: 'account', name: 'Account', icon: User },
@@ -68,6 +75,14 @@ export const Settings = () => {
     { id: 'mcp', name: 'MCP Servers', icon: Zap },
     { id: 'advanced', name: 'Advanced', icon: SettingsIcon }
   ];
+  
+  // Add user management tab for admins
+  if (user?.role === 'admin') {
+    tabs.splice(1, 0, { id: 'users', name: 'User Management', icon: Users });
+  }
+  
+  // Add API tokens tab
+  tabs.splice(3, 0, { id: 'tokens', name: 'API Tokens', icon: Key });
 
   // Load API keys from environment/backend on component mount
   useEffect(() => {
@@ -222,80 +237,13 @@ export const Settings = () => {
   const renderContent = () => {
     switch (activeTab) {
       case 'account':
-        return (
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Profile Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Full Name</label>
-                  <input
-                    type="text"
-                    defaultValue="Agent Master"
-                    className="w-full bg-slate-700/50 border border-slate-600/50 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Email</label>
-                  <input
-                    type="email"
-                    defaultValue="agent.master@example.com"
-                    className="w-full bg-slate-700/50 border border-slate-600/50 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Organization</label>
-                  <input
-                    type="text"
-                    defaultValue="Agentic Systems Inc."
-                    className="w-full bg-slate-700/50 border border-slate-600/50 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-300 mb-2">Timezone</label>
-                  <select className="w-full bg-slate-700/50 border border-slate-600/50 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
-                    <option>UTC-8 (Pacific Time)</option>
-                    <option>UTC-5 (Eastern Time)</option>
-                    <option>UTC+0 (GMT)</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            
-            <div>
-              <h3 className="text-lg font-semibold text-white mb-4">Account Statistics</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
-                  <div className="flex items-center space-x-3">
-                    <Bot className="w-8 h-8 text-purple-400" />
-                    <div>
-                      <p className="text-white font-medium">Active Agents</p>
-                      <p className="text-slate-400 text-sm">47 deployed</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
-                  <div className="flex items-center space-x-3">
-                    <Target className="w-8 h-8 text-blue-400" />
-                    <div>
-                      <p className="text-white font-medium">Target Systems</p>
-                      <p className="text-slate-400 text-sm">23 connected</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="p-4 bg-slate-700/30 rounded-lg border border-slate-600/30">
-                  <div className="flex items-center space-x-3">
-                    <Zap className="w-8 h-8 text-green-400" />
-                    <div>
-                      <p className="text-white font-medium">Orchestrations</p>
-                      <p className="text-slate-400 text-sm">2,847 total</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+        return <UserProfile />;
+        
+      case 'users':
+        return <UserManagement />;
+        
+      case 'tokens':
+        return <APITokens />;
 
       case 'inference':
         return (
@@ -714,11 +662,13 @@ export const Settings = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-all duration-200 text-left ${
-                      activeTab === tab.id
-                        ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-white border border-purple-500/30'
+                    className={`
+                      w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200
+                      ${activeTab === tab.id 
+                        ? 'bg-gradient-to-r from-purple-500/20 to-blue-500/20 text-white border border-purple-500/30' 
                         : 'text-slate-300 hover:text-white hover:bg-slate-700/50'
-                    }`}
+                      }
+                    `}
                   >
                     <Icon className="w-5 h-5" />
                     <span className="font-medium">{tab.name}</span>
@@ -734,15 +684,17 @@ export const Settings = () => {
               {renderContent()}
               
               {/* Save Button */}
-              <div className="mt-8 pt-6 border-t border-slate-700/50">
-                <div className="flex items-center justify-between">
-                  <p className="text-slate-400 text-sm">Changes are saved automatically</p>
-                  <button className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 flex items-center space-x-2">
-                    <Save className="w-4 h-4" />
-                    <span>Save Changes</span>
-                  </button>
+              {activeTab !== 'account' && activeTab !== 'users' && activeTab !== 'tokens' && (
+                <div className="mt-8 pt-6 border-t border-slate-700/50">
+                  <div className="flex items-center justify-between">
+                    <p className="text-slate-400 text-sm">Changes are saved automatically</p>
+                    <button className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 flex items-center space-x-2">
+                      <Save className="w-4 h-4" />
+                      <span>Save Changes</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

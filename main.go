@@ -15,6 +15,8 @@ import (
 	"time"
 
 	"Inference_Engine/api"
+	"Inference_Engine/database"
+	"Inference_Engine/inference"
 
 	"github.com/joho/godotenv"
 )
@@ -39,28 +41,58 @@ func main() {
 		log.Println("🚀 Starting Inference Engine in DEVELOPMENT mode...")
 	}
 
-	dbPath := "./data/inference_engine.db"
+	// Database paths
+	dbDir := "./data"
+	domainDBPath := filepath.Join(dbDir, "domain.db")
+	authDBPath := filepath.Join(dbDir, "auth.db")
 
 	if *cleanDB {
-		log.Printf("🧹 Attempting to clean database directory: %s", dbPath)
-		if err := os.RemoveAll(dbPath); err != nil {
-			log.Printf("⚠️  Warning: Failed to remove database directory %s: %v. Proceeding anyway.", dbPath, err)
+		log.Printf("🧹 Attempting to clean database directory: %s", dbDir)
+		if err := os.RemoveAll(dbDir); err != nil {
+			log.Printf("⚠️  Warning: Failed to remove database directory %s: %v. Proceeding anyway.", dbDir, err)
 		} else {
-			log.Printf("✅ Database directory %s cleaned successfully.", dbPath)
+			log.Printf("✅ Database directory %s cleaned successfully.", dbDir)
 		}
+	}
+
+	// Ensure database directory exists
+	if err := os.MkdirAll(dbDir, 0755); err != nil {
+		log.Fatalf("Failed to create database directory: %v", err)
+	}
+
+	// Initialize auth database
+	authDB, err := database.NewAuthDB(authDBPath)
+	if err != nil {
+		log.Fatalf("Failed to initialize auth database: %v", err)
+	}
+	defer authDB.Close()
+
+	// Initialize domain database
+	domainDB, err := database.NewSimpleDomainDB(domainDBPath)
+	if err != nil {
+		log.Fatalf("Failed to initialize domain database: %v", err)
+	}
+	defer domainDB.Close()
+
+	// Initialize inference service
+	inferenceService, err := inference.NewInferenceService(domainDB)
+	if err != nil {
+		log.Fatalf("Failed to initialize inference service: %v", err)
+	}
+
+	// Get JWT secret from environment or use a default
+	jwtSecret := os.Getenv("JWT_SECRET")
+	if jwtSecret == "" {
+		jwtSecret = "your-secret-key" // Default secret key (change in production)
+		log.Println("⚠️  Warning: Using default JWT secret. Set JWT_SECRET environment variable in production.")
 	}
 
 	shutdownFromAPIChan := make(chan struct{}, 1) // Channel to signal shutdown from API
 
-	// Start API server in a goroutine
-	apiServer, err := api.NewSimpleAPIServer(8080, dbPath, shutdownFromAPIChan)
+	// Create and start API server
+	apiServer, err := api.NewServer(authDB, domainDB, inferenceService, jwtSecret)
 	if err != nil {
 		log.Fatalf("Failed to create API server: %v", err)
-	}
-
-	// Create sample data
-	if err := apiServer.CreateSampleData(); err != nil {
-		log.Printf("Warning: Failed to create sample data: %v", err)
 	}
 
 	// Start API server in background
