@@ -75,7 +75,7 @@ describe('AgentManager', () => {
 
   test('should render the component with initial agents', () => {
     renderComponent();
-    expect(screen.getByText('NFT-Agent Manager')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /NFT-Agent Manager/i })).toBeInTheDocument();
     expect(screen.getByText('CyberPunk Agent #7804')).toBeInTheDocument();
     expect(screen.getByText('Data Miner #3749')).toBeInTheDocument();
   });
@@ -137,13 +137,13 @@ describe('AgentManager', () => {
     renderComponent();
     
     // Click Create Agent button
-    fireEvent.click(screen.getByText('Create Agent'));
+    fireEvent.click(screen.getByRole('button', { name: /Create Agent/i }));
     
     // Modal should be open
     expect(screen.getByTestId('agent-creation-modal')).toBeInTheDocument();
     
     // Close the modal
-    fireEvent.click(screen.getByText('Close'));
+    fireEvent.click(screen.getByRole('button', { name: /Close/i }));
     
     // Modal should be closed
     expect(screen.queryByTestId('agent-creation-modal')).not.toBeInTheDocument();
@@ -159,7 +159,7 @@ describe('AgentManager', () => {
     fireEvent.click(screen.getByText('Create Agent'));
     
     // Create a new agent
-    fireEvent.click(screen.getByText('Create Agent'));
+    fireEvent.click(screen.getByRole('button', { name: /Create Agent/i }));
     
     // Wait for the new agent to be added
     await waitFor(() => {
@@ -182,7 +182,7 @@ describe('AgentManager', () => {
     expect(screen.getByTestId('agent-deployment-modal')).toBeInTheDocument();
     
     // Close the modal
-    fireEvent.click(screen.getByText('Close'));
+    fireEvent.click(screen.getByRole('button', { name: /Close/i }));
     
     // Modal should be closed
     expect(screen.queryByTestId('agent-deployment-modal')).not.toBeInTheDocument();
@@ -196,7 +196,7 @@ describe('AgentManager', () => {
     fireEvent.click(deployButtons[0]);
     
     // Deploy the agent
-    fireEvent.click(screen.getByText('Deploy'));
+    fireEvent.click(screen.getByRole('button', { name: /Deploy/i }));
     
     // Wait for the agent to be updated
     await waitFor(() => {
@@ -216,7 +216,7 @@ describe('AgentManager', () => {
     expect(screen.getByTestId('agent-config-modal')).toBeInTheDocument();
     
     // Close the modal
-    fireEvent.click(screen.getByText('Close'));
+    fireEvent.click(screen.getByRole('button', { name: /Close/i }));
     
     // Modal should be closed
     expect(screen.queryByTestId('agent-config-modal')).not.toBeInTheDocument();
@@ -230,7 +230,7 @@ describe('AgentManager', () => {
     fireEvent.click(settingsButtons[0]);
     
     // Update the agent
-    fireEvent.click(screen.getByText('Update'));
+    fireEvent.click(screen.getByRole('button', { name: /Update/i }));
     
     // Wait for the agent to be updated
     await waitFor(() => {

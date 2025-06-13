@@ -36,7 +36,7 @@ describe('AgentCreationModal', () => {
 
   test('should render when isOpen is true', () => {
     renderModal();
-    expect(screen.getByText('Create New NFT-Agent')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Create New NFT-Agent/i })).toBeInTheDocument();
     expect(screen.getByText('Basic Information')).toBeInTheDocument();
     expect(screen.getByText('Agent Image')).toBeInTheDocument();
     expect(screen.getByText('Capabilities')).toBeInTheDocument();
@@ -45,7 +45,7 @@ describe('AgentCreationModal', () => {
 
   test('should call onClose when cancel button is clicked', () => {
     renderModal();
-    fireEvent.click(screen.getByText('Cancel'));
+    fireEvent.click(screen.getByRole('button', { name: /Cancel/i }));
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
@@ -59,7 +59,7 @@ describe('AgentCreationModal', () => {
     renderModal();
     
     // Submit the form without filling any fields
-    fireEvent.click(screen.getByText('Create Agent'));
+    fireEvent.click(screen.getByRole('button', { name: /Create Agent/i }));
     
     // Wait for validation errors to appear
     await waitFor(() => {
@@ -99,7 +99,7 @@ describe('AgentCreationModal', () => {
     fireEvent.click(targetTypes[0]);
     
     // Submit the form
-    fireEvent.click(screen.getByText('Create Agent'));
+    fireEvent.click(screen.getByRole('button', { name: /Create Agent/i }));
     
     // Mock the async operation
     await waitFor(() => {

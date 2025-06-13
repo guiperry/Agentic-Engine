@@ -266,20 +266,22 @@ export const AgentManager = () => {
           <button
             onClick={() => setViewMode('grid')}
             className={`p-2 rounded-lg transition-all duration-200 ${
-              viewMode === 'grid' 
-                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' 
+              viewMode === 'grid'
+                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
                 : 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:text-white'
             }`}
+            aria-label="Grid view"
           >
             <Grid className="w-5 h-5" />
           </button>
           <button
             onClick={() => setViewMode('list')}
             className={`p-2 rounded-lg transition-all duration-200 ${
-              viewMode === 'list' 
-                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' 
+              viewMode === 'list'
+                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
                 : 'bg-slate-800/50 text-slate-400 border border-slate-700/50 hover:text-white'
             }`}
+            aria-label="List view"
           >
             <List className="w-5 h-5" />
           </button>
@@ -322,12 +324,16 @@ export const AgentManager = () => {
                   </span>
                 </div>
                 <div className="absolute bottom-3 right-3 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <button className="p-2 bg-black/50 backdrop-blur-sm rounded-lg text-white hover:bg-black/70 transition-colors duration-200">
+                  <button
+                    className="p-2 bg-black/50 backdrop-blur-sm rounded-lg text-white hover:bg-black/70 transition-colors duration-200"
+                    aria-label={`View details for ${agent.name}`}
+                  >
                     <Eye className="w-4 h-4" />
                   </button>
-                  <button 
+                  <button
                     className="p-2 bg-black/50 backdrop-blur-sm rounded-lg text-white hover:bg-black/70 transition-colors duration-200"
                     onClick={() => handleConfigClick(agent)}
+                    aria-label={`Settings for ${agent.name}`}
                   >
                     <Settings className="w-4 h-4" />
                   </button>
@@ -467,12 +473,16 @@ export const AgentManager = () => {
                             <Square className="w-4 h-4" />
                           </button>
                         )}
-                        <button className="p-2 text-slate-400 hover:text-white transition-colors duration-200">
+                        <button
+                          className="p-2 text-slate-400 hover:text-white transition-colors duration-200"
+                          aria-label={`View details for ${agent.name}`}
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleConfigClick(agent)}
                           className="p-2 text-slate-400 hover:text-white transition-colors duration-200"
+                          aria-label={`Settings for ${agent.name}`}
                         >
                           <Settings className="w-4 h-4" />
                         </button>

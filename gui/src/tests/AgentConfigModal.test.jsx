@@ -52,18 +52,18 @@ describe('AgentConfigModal', () => {
 
   test('should render when isOpen is true and agent is provided', () => {
     renderModal();
-    expect(screen.getByText('Agent Configuration')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Agent Configuration/i })).toBeInTheDocument();
     expect(screen.getByText(mockAgent.name)).toBeInTheDocument();
   });
 
   test('should display all tabs', () => {
     renderModal();
-    expect(screen.getByText('General')).toBeInTheDocument();
-    expect(screen.getByText('Capabilities')).toBeInTheDocument();
-    expect(screen.getByText('Target Types')).toBeInTheDocument();
-    expect(screen.getByText('Performance')).toBeInTheDocument();
-    expect(screen.getByText('Security')).toBeInTheDocument();
-    expect(screen.getByText('Advanced')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /General/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Capabilities/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Target Types/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Performance/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Security/i })).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: /Advanced/i })).toBeInTheDocument();
   });
 
   test('should switch tabs when clicked', () => {
@@ -73,33 +73,33 @@ describe('AgentConfigModal', () => {
     expect(screen.getByLabelText('Agent Name')).toBeInTheDocument();
     
     // Click on Capabilities tab
-    fireEvent.click(screen.getByText('Capabilities'));
+    fireEvent.click(screen.getByRole('tab', { name: /Capabilities/i }));
     expect(screen.getByText('Agent Capabilities')).toBeInTheDocument();
     
     // Click on Target Types tab
-    fireEvent.click(screen.getByText('Target Types'));
+    fireEvent.click(screen.getByRole('tab', { name: /Target Types/i }));
     expect(screen.getByText('Target Types')).toBeInTheDocument();
     
     // Click on Performance tab
-    fireEvent.click(screen.getByText('Performance'));
+    fireEvent.click(screen.getByRole('tab', { name: /Performance/i }));
     expect(screen.getByText('Performance Settings')).toBeInTheDocument();
     
     // Click on Security tab
-    fireEvent.click(screen.getByText('Security'));
+    fireEvent.click(screen.getByRole('tab', { name: /Security/i }));
     expect(screen.getByText('Security Settings')).toBeInTheDocument();
     
     // Click on Advanced tab
-    fireEvent.click(screen.getByText('Advanced'));
+    fireEvent.click(screen.getByRole('tab', { name: /Advanced/i }));
     expect(screen.getByText('Advanced Settings')).toBeInTheDocument();
     
     // Go back to General tab
-    fireEvent.click(screen.getByText('General'));
+    fireEvent.click(screen.getByRole('tab', { name: /General/i }));
     expect(screen.getByLabelText('Agent Name')).toBeInTheDocument();
   });
 
   test('should call onClose when cancel button is clicked', () => {
     renderModal();
-    fireEvent.click(screen.getByText('Cancel'));
+    fireEvent.click(screen.getByRole('button', { name: /Cancel/i }));
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
@@ -122,7 +122,7 @@ describe('AgentConfigModal', () => {
     });
     
     // Submit the form
-    fireEvent.click(screen.getByText('Save Configuration'));
+    fireEvent.click(screen.getByRole('button', { name: /Save Configuration/i }));
     
     // Wait for validation errors
     await waitFor(() => {
@@ -150,7 +150,7 @@ describe('AgentConfigModal', () => {
     });
     
     // Submit the form
-    fireEvent.click(screen.getByText('Save Configuration'));
+    fireEvent.click(screen.getByRole('button', { name: /Save Configuration/i }));
     
     // Wait for success message and callback
     await waitFor(() => {

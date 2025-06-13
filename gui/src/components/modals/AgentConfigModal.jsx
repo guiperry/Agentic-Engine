@@ -296,8 +296,9 @@ const AgentConfigModal = ({ isOpen, onClose, agent, onAgentUpdated }) => {
               <p className="text-slate-400 text-sm">{agent.name}</p>
             </div>
           </div>
-          <button 
+          <button
             onClick={onClose}
+            aria-label="Close"
             className="p-2 text-slate-400 hover:text-white transition-colors duration-200"
           >
             <X className="w-5 h-5" />

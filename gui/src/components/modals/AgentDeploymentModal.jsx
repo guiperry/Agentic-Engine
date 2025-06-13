@@ -346,8 +346,9 @@ const AgentDeploymentModal = ({ isOpen, onClose, agent, onAgentDeployed }) => {
             </div>
             <h2 className="text-xl font-bold text-white">Deploy Agent</h2>
           </div>
-          <button 
+          <button
             onClick={onClose}
+            aria-label="Close"
             className="p-2 text-slate-400 hover:text-white transition-colors duration-200"
             disabled={deploymentStatus === 'deploying'}
           >

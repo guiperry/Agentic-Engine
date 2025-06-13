@@ -44,14 +44,14 @@ describe('AgentDeploymentModal', () => {
 
   test('should render when isOpen is true and agent is provided', () => {
     renderModal();
-    expect(screen.getByText('Deploy Agent')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Deploy Agent/i })).toBeInTheDocument();
     expect(screen.getByText('Select Target System')).toBeInTheDocument();
     expect(screen.getByText(mockAgent.name)).toBeInTheDocument();
   });
 
   test('should call onClose when cancel button is clicked', () => {
     renderModal();
-    fireEvent.click(screen.getByText('Cancel'));
+    fireEvent.click(screen.getByRole('button', { name: /Cancel/i }));
     expect(mockOnClose).toHaveBeenCalledTimes(1);
   });
 
@@ -65,7 +65,7 @@ describe('AgentDeploymentModal', () => {
     renderModal();
     
     // Try to deploy without selecting target and capability
-    fireEvent.click(screen.getByText('Deploy Agent'));
+    fireEvent.click(screen.getByRole('button', { name: /Deploy Agent/i }));
     
     // Wait for validation errors
     await waitFor(() => {
@@ -99,7 +99,7 @@ describe('AgentDeploymentModal', () => {
     });
     
     // Deploy the agent
-    fireEvent.click(screen.getByText('Deploy Agent'));
+    fireEvent.click(screen.getByRole('button', { name: /Deploy Agent/i }));
     
     // Verify deployment status updates
     await waitFor(() => {

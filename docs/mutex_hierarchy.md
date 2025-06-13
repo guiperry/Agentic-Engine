@@ -1,6 +1,6 @@
 # Mutex Hierarchy and Concurrency Management
 
-This document outlines the mutex usage throughout the Wordpress Inference Engine application, explaining how concurrency is managed across different components.
+This document outlines the mutex usage throughout the Agentic Inference Engine application, explaining how concurrency is managed across different components.
 
 ## Overview
 

@@ -43,7 +43,7 @@ describe('Dashboard', () => {
     renderDashboard();
     
     // Header
-    expect(screen.getByText('Agent Command Center')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Agent Command Center/i })).toBeInTheDocument();
     
     // Stats
     expect(screen.getByText('Active Agents')).toBeInTheDocument();
@@ -52,30 +52,30 @@ describe('Dashboard', () => {
     expect(screen.getByText('Success Rate')).toBeInTheDocument();
     
     // Recent Activity
-    expect(screen.getByText('Recent Agent Activity')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Recent Agent Activity/i })).toBeInTheDocument();
     
     // Target System Status
-    expect(screen.getByText('Target System Status')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Target System Status/i })).toBeInTheDocument();
     
     // Quick Actions
-    expect(screen.getByText('Quick Actions')).toBeInTheDocument();
-    expect(screen.getByText('Deploy New Agent')).toBeInTheDocument();
-    expect(screen.getByText('Add Target System')).toBeInTheDocument();
-    expect(screen.getByText('Install Capability')).toBeInTheDocument();
-    expect(screen.getByText('Monitor Activity')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Quick Actions/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Deploy New Agent/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Add Target System/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Install Capability/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /Monitor Activity/i })).toBeInTheDocument();
   });
 
   test('should open agent creation modal when Deploy Agent button is clicked', () => {
     renderDashboard();
     
     // Click the Deploy Agent button in the header
-    fireEvent.click(screen.getByText('Deploy Agent'));
+    fireEvent.click(screen.getByRole('button', { name: /Deploy Agent/i }));
     
     // Modal should be open
     expect(screen.getByTestId('agent-creation-modal')).toBeInTheDocument();
     
     // Close the modal
-    fireEvent.click(screen.getByText('Close'));
+    fireEvent.click(screen.getByRole('button', { name: /Close/i }));
     
     // Modal should be closed
     expect(screen.queryByTestId('agent-creation-modal')).not.toBeInTheDocument();
@@ -85,10 +85,10 @@ describe('Dashboard', () => {
     renderDashboard();
     
     // Open the modal
-    fireEvent.click(screen.getByText('Deploy Agent'));
+    fireEvent.click(screen.getByRole('button', { name: /Deploy Agent/i }));
     
     // Create an agent
-    fireEvent.click(screen.getByText('Create Agent'));
+    fireEvent.click(screen.getByRole('button', { name: /Create Agent/i }));
     
     // Should navigate to agents page
     expect(mockNavigate).toHaveBeenCalledWith('/agents');
@@ -98,7 +98,7 @@ describe('Dashboard', () => {
     renderDashboard();
     
     // Click the Deploy New Agent quick action
-    fireEvent.click(screen.getByText('Deploy New Agent'));
+    fireEvent.click(screen.getByRole('button', { name: /Deploy New Agent/i }));
     
     // Modal should be open
     expect(screen.getByTestId('agent-creation-modal')).toBeInTheDocument();
@@ -108,7 +108,7 @@ describe('Dashboard', () => {
     renderDashboard();
     
     // Click the Add Target System quick action
-    fireEvent.click(screen.getByText('Add Target System'));
+    fireEvent.click(screen.getByRole('button', { name: /Add Target System/i }));
     
     // Should navigate to targets page
     expect(mockNavigate).toHaveBeenCalledWith('/targets');
@@ -118,7 +118,7 @@ describe('Dashboard', () => {
     renderDashboard();
     
     // Click the Install Capability quick action
-    fireEvent.click(screen.getByText('Install Capability'));
+    fireEvent.click(screen.getByRole('button', { name: /Install Capability/i }));
     
     // Should navigate to capabilities page
     expect(mockNavigate).toHaveBeenCalledWith('/capabilities');
@@ -128,7 +128,7 @@ describe('Dashboard', () => {
     renderDashboard();
     
     // Click the Monitor Activity quick action
-    fireEvent.click(screen.getByText('Monitor Activity'));
+    fireEvent.click(screen.getByRole('button', { name: /Monitor Activity/i }));
     
     // Should navigate to orchestrator page
     expect(mockNavigate).toHaveBeenCalledWith('/orchestrator');
@@ -138,7 +138,7 @@ describe('Dashboard', () => {
     renderDashboard();
     
     // Click the View All button in Recent Agent Activity
-    fireEvent.click(screen.getByText('View All'));
+    fireEvent.click(screen.getByRole('button', { name: /View All/i }));
     
     // Should navigate to orchestrator page
     expect(mockNavigate).toHaveBeenCalledWith('/orchestrator');

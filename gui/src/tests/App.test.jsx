@@ -60,7 +60,7 @@ describe('App', () => {
     expect(screen.getByTestId('dashboard')).toBeInTheDocument();
     
     // Click Agents link
-    fireEvent.click(screen.getByText('Agents'));
+    fireEvent.click(screen.getByRole('link', { name: /Agents/i }));
     
     // Agent Manager should now be visible
     expect(screen.getByTestId('agent-manager')).toBeInTheDocument();
@@ -87,7 +87,7 @@ describe('App', () => {
     expect(sidebar).toHaveClass('translate-x-0');
     
     // Click the close button to close sidebar
-    fireEvent.click(screen.getByText('Close Sidebar'));
+    fireEvent.click(screen.getByRole('button', { name: /Close Sidebar/i }));
     
     // Sidebar should be closed again
     expect(sidebar).toHaveClass('-translate-x-full');

@@ -242,8 +242,9 @@ const AgentCreationModal = ({ isOpen, onClose, onAgentCreated }) => {
             </div>
             <h2 className="text-xl font-bold text-white">Create New NFT-Agent</h2>
           </div>
-          <button 
+          <button
             onClick={onClose}
+            aria-label="Close"
             className="p-2 text-slate-400 hover:text-white transition-colors duration-200"
           >
             <X className="w-5 h-5" />
