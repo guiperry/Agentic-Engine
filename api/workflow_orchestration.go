@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"Inference_Engine/inference"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
@@ -49,8 +50,14 @@ type WorkflowResult struct {
 
 // WorkflowOrchestrationService manages workflow orchestration
 type WorkflowOrchestrationService struct {
-	workflows map[string]*WorkflowResult
-	mutex     sync.RWMutex
+	workflows       map[string]*WorkflowResult
+	mutex          sync.RWMutex
+	inferenceService *inference.InferenceService
+}
+
+// SetInferenceService sets the inference service for the workflow orchestrator
+func (s *WorkflowOrchestrationService) SetInferenceService(service *inference.InferenceService) {
+	s.inferenceService = service
 }
 
 // NewWorkflowOrchestrationService creates a new workflow orchestration service
@@ -83,7 +90,7 @@ func (s *WorkflowOrchestrationService) StartWorkflow(ctx context.Context, req Wo
 	// Store workflow in memory
 	s.workflows[workflowID] = result
 
-	// Start workflow in a goroutine
+	// Start workflow in a goroutine with the provided context
 	go s.executeWorkflow(ctx, result)
 
 	return result, nil
@@ -106,12 +113,17 @@ func (s *WorkflowOrchestrationService) executeWorkflow(ctx context.Context, resu
 	// Simulate workflow execution
 	log.Printf("Executing workflow %s with prompt: %s", result.ID, prompt)
 	
-	// Simulate processing time
-	time.Sleep(2 * time.Second)
-	
-	// Generate a response based on the agent, target, and capability
-	output := fmt.Sprintf("Response from agent %s using capability %s on target %s: Processed '%s'", 
-		result.AgentID, result.CapabilityID, result.TargetID, prompt)
+	// Simulate processing time with context awareness
+	var output string
+	select {
+	case <-time.After(2 * time.Second):
+		// Generate a response based on the agent, target, and capability
+		output = fmt.Sprintf("Response from agent %s using capability %s on target %s: Processed '%s'",
+			result.AgentID, result.CapabilityID, result.TargetID, prompt)
+	case <-ctx.Done():
+		s.completeWorkflowWithError(result, fmt.Sprintf("Workflow cancelled: %v", ctx.Err()))
+		return
+	}
 
 	// Complete workflow successfully
 	s.completeWorkflowSuccess(result, output)

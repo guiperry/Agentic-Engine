@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
@@ -12,6 +13,14 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/gorilla/mux"
+)
+
+// ContextKey is a custom type for context keys to avoid collisions
+type ContextKey string
+
+const (
+	// UserIDContextKey is the key used to store user ID in context
+	UserIDContextKey ContextKey = "userID"
 )
 
 // AuthService handles user authentication and authorization
@@ -296,7 +305,7 @@ func (s *AuthService) handleListTokens(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	
 	// Get user ID from context (set by auth middleware)
-	userID, ok := r.Context().Value("userID").(int64)
+	userID, ok := r.Context().Value(UserIDContextKey).(int64)
 	if !ok {
 		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -337,7 +346,7 @@ func (s *AuthService) handleCreateToken(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 	
 	// Get user ID from context (set by auth middleware)
-	userID, ok := r.Context().Value("userID").(int64)
+	userID, ok := r.Context().Value(UserIDContextKey).(int64)
 	if !ok {
 		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -398,7 +407,7 @@ func (s *AuthService) handleDeleteToken(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 	
 	// Get user ID from context (set by auth middleware)
-	userID, ok := r.Context().Value("userID").(int64)
+	userID, ok := r.Context().Value(UserIDContextKey).(int64)
 	if !ok {
 		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
@@ -525,7 +534,7 @@ func (s *AuthService) AuthMiddleware(next http.Handler) http.Handler {
 		}
 		
 		// Set user ID in context
-		ctx := context.WithValue(r.Context(), "userID", userID)
+		ctx := context.WithValue(r.Context(), UserIDContextKey, userID)
 		
 		// Call next handler with updated context
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -537,7 +546,7 @@ func (s *AuthService) RequirePermission(permission string) func(http.Handler) ht
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			// Get user ID from context (set by auth middleware)
-			userID, ok := r.Context().Value("userID").(int64)
+			userID, ok := r.Context().Value(UserIDContextKey).(int64)
 			if !ok {
 				respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 				return
@@ -567,25 +576,4 @@ func (s *AuthService) RequirePermission(permission string) func(http.Handler) ht
 func parseJSONBody(r *http.Request, v interface{}) error {
 	decoder := json.NewDecoder(r.Body)
 	return decoder.Decode(v)
-}
-
-// respondWithJSON sends a JSON response
-func respondWithJSON(w http.ResponseWriter, status int, data interface{}) {
-	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(data)
-}
-
-// respondWithError sends an error response
-func respondWithError(w http.ResponseWriter, status int, message string) {
-	respondWithJSON(w, status, map[string]string{"error": message})
-}
-
-// parseID parses a string ID into an int64
-func parseID(id string) (int64, error) {
-	var result int64
-	_, err := fmt.Sscanf(id, "%d", &result)
-	if err != nil {
-		return 0, err
-	}
-	return result, nil
 }

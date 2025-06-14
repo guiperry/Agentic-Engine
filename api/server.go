@@ -22,10 +22,6 @@ type Server struct {
 type ServiceContainer struct {
 	AuthService         *AuthService
 	UserService         *UserService
-	AgentService        *AgentService
-	TargetService       *TargetService
-	CapabilityService   *CapabilityService
-	InferenceService    *InferenceService
 	OrchestrationService *WorkflowOrchestrationService
 	AnalyticsService    *AnalyticsService
 	WebConnectionsService *WebConnectionsService
@@ -82,11 +78,12 @@ func setupServices(
 		return nil, err
 	}
 	
-	// Create agent repository
-	agentRepo := database.NewSimpleAgentRepository(agentCollection)
+	// Create agent repository (will be used when agent functionality is implemented)
+	_ = database.NewSimpleAgentRepository(agentCollection)
 	
-	// Create workflow orchestration service
+	// Create workflow orchestration service with core inference
 	workflowService := NewWorkflowOrchestrationService()
+	workflowService.SetInferenceService(coreInference)
 	
 	// Create web connections service
 	webConnectionsService := NewWebConnectionsService()

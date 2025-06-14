@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-	"sync"
 
 	"Inference_Engine/database"
 	"Inference_Engine/inference"
@@ -18,17 +17,15 @@ import (
 
 // SimpleAPIServer provides a simplified REST API for the inference engine
 type SimpleAPIServer struct {
-	db                  *database.SimpleDomainDB
-	agentRepo           *database.SimpleAgentRepository
-	router              *mux.Router
-	httpServer          *http.Server // Renamed for clarity and to avoid conflict
-	port                int
-	dbPath              string
-	inferenceService    *inference.InferenceService
-	workflowService     *WorkflowOrchestrationService // Added workflow orchestration service
-	// inferenceServiceMux is used to protect inferenceService if it's initialized/accessed concurrently later
-	shutdownSignalChan  chan<- struct{} // Channel to signal main to shut down
-	inferenceServiceMux sync.Mutex      // To protect inferenceService initialization
+	db                 *database.SimpleDomainDB
+	agentRepo          *database.SimpleAgentRepository
+	router             *mux.Router
+	httpServer         *http.Server // Renamed for clarity and to avoid conflict
+	port               int
+	dbPath             string
+	inferenceService   *inference.InferenceService
+	workflowService    *WorkflowOrchestrationService // Added workflow orchestration service
+	shutdownSignalChan chan<- struct{} // Channel to signal main to shut down
 }
 
 // NewSimpleAPIServer creates a new simple API server

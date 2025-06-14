@@ -2,7 +2,7 @@ package api
 
 import (
 	"Inference_Engine/database"
-	"context"
+	
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -37,11 +37,11 @@ func (s *UserService) RegisterHandlers(router *mux.Router, authService *AuthServ
 	protected.Use(authService.AuthMiddleware)
 	
 	// User management (admin only)
-	protected.HandleFunc("", authService.RequirePermission("user:read")(s.handleListUsers)).Methods("GET")
-	protected.HandleFunc("/{id}", authService.RequirePermission("user:read")(s.handleGetUser)).Methods("GET")
-	protected.HandleFunc("", authService.RequirePermission("user:create")(s.handleCreateUser)).Methods("POST")
-	protected.HandleFunc("/{id}", authService.RequirePermission("user:update")(s.handleUpdateUser)).Methods("PUT")
-	protected.HandleFunc("/{id}", authService.RequirePermission("user:delete")(s.handleDeleteUser)).Methods("DELETE")
+	protected.Handle("", authService.RequirePermission("user:read")(http.HandlerFunc(s.handleListUsers))).Methods("GET")
+	protected.Handle("/{id}", authService.RequirePermission("user:read")(http.HandlerFunc(s.handleGetUser))).Methods("GET")
+	protected.Handle("", authService.RequirePermission("user:create")(http.HandlerFunc(s.handleCreateUser))).Methods("POST")
+	protected.Handle("/{id}", authService.RequirePermission("user:update")(http.HandlerFunc(s.handleUpdateUser))).Methods("PUT")
+	protected.Handle("/{id}", authService.RequirePermission("user:delete")(http.HandlerFunc(s.handleDeleteUser))).Methods("DELETE")
 	
 	// Current user profile (any authenticated user)
 	protected.HandleFunc("/profile", s.handleGetProfile).Methods("GET")
