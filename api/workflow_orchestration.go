@@ -9,7 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"Inference_Engine/inference"
+	"Agentic_Engine/inference"
+
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
@@ -50,8 +51,8 @@ type WorkflowResult struct {
 
 // WorkflowOrchestrationService manages workflow orchestration
 type WorkflowOrchestrationService struct {
-	workflows       map[string]*WorkflowResult
-	mutex          sync.RWMutex
+	workflows        map[string]*WorkflowResult
+	mutex            sync.RWMutex
 	inferenceService *inference.InferenceService
 }
 
@@ -112,7 +113,7 @@ func (s *WorkflowOrchestrationService) executeWorkflow(ctx context.Context, resu
 
 	// Simulate workflow execution
 	log.Printf("Executing workflow %s with prompt: %s", result.ID, prompt)
-	
+
 	// Simulate processing time with context awareness
 	var output string
 	select {

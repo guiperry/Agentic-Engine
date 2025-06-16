@@ -1,4 +1,4 @@
-module Inference_Engine
+module Agentic_Engine
 
 go 1.23.8
 

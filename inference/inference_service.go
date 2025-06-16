@@ -12,10 +12,11 @@ import (
 
 	// Use gollm types for messages if needed here, or keep them internal to delegator
 
-	"Inference_Engine/database"
+	"Agentic_Engine/database"
+
+	gollm "github.com/guiperry/gollm_cerebras"
 	"github.com/guiperry/gollm_cerebras/config"
 	"github.com/guiperry/gollm_cerebras/llm"
-	gollm "github.com/guiperry/gollm_cerebras"
 )
 
 // LLMAttemptConfig defines the configuration for a single LLM attempt.

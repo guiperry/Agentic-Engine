@@ -16,9 +16,9 @@ import (
 	"syscall"
 	"time"
 
-	"Inference_Engine/api"
-	"Inference_Engine/database"
-	"Inference_Engine/inference"
+	"Agentic_Engine/api"
+	"Agentic_Engine/database"
+	"Agentic_Engine/inference"
 
 	"github.com/joho/godotenv"
 )
@@ -263,5 +263,5 @@ func serveStaticGUI(port int, serverPtr **http.Server) error {
 	*serverPtr = server // Assign the server instance to the provided pointer
 
 	return server.ListenAndServe()
-	
+
 }

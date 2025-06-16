@@ -1,8 +1,8 @@
 package api
 
 import (
-	"Inference_Engine/database"
-	
+	"Agentic_Engine/database"
+
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -35,14 +35,14 @@ func (s *UserService) RegisterHandlers(router *mux.Router, authService *AuthServ
 	// Protected routes
 	protected := router.PathPrefix("/api/v1/users").Subrouter()
 	protected.Use(authService.AuthMiddleware)
-	
+
 	// User management (admin only)
 	protected.Handle("", authService.RequirePermission("user:read")(http.HandlerFunc(s.handleListUsers))).Methods("GET")
 	protected.Handle("/{id}", authService.RequirePermission("user:read")(http.HandlerFunc(s.handleGetUser))).Methods("GET")
 	protected.Handle("", authService.RequirePermission("user:create")(http.HandlerFunc(s.handleCreateUser))).Methods("POST")
 	protected.Handle("/{id}", authService.RequirePermission("user:update")(http.HandlerFunc(s.handleUpdateUser))).Methods("PUT")
 	protected.Handle("/{id}", authService.RequirePermission("user:delete")(http.HandlerFunc(s.handleDeleteUser))).Methods("DELETE")
-	
+
 	// Current user profile (any authenticated user)
 	protected.HandleFunc("/profile", s.handleGetProfile).Methods("GET")
 	protected.HandleFunc("/profile", s.handleUpdateProfile).Methods("PUT")
@@ -57,7 +57,7 @@ func (s *UserService) handleListUsers(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "Failed to list users")
 		return
 	}
-	
+
 	respondWithJSON(w, http.StatusOK, map[string]interface{}{
 		"users": users,
 	})
@@ -72,14 +72,14 @@ func (s *UserService) handleGetUser(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Invalid user ID")
 		return
 	}
-	
+
 	// Get user
 	user, err := s.userRepo.GetUserByID(r.Context(), userID)
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, "User not found")
 		return
 	}
-	
+
 	respondWithJSON(w, http.StatusOK, map[string]interface{}{
 		"user": user,
 	})
@@ -94,18 +94,18 @@ func (s *UserService) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 		Password string `json:"password"`
 		Role     string `json:"role"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request")
 		return
 	}
-	
+
 	// Validate input
 	if req.Username == "" || req.Email == "" || req.Password == "" {
 		respondWithError(w, http.StatusBadRequest, "Username, email, and password are required")
 		return
 	}
-	
+
 	// Validate role
 	if req.Role == "" {
 		req.Role = "user" // Default role
@@ -117,14 +117,14 @@ func (s *UserService) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	
+
 	// Create user
 	user := &database.User{
 		Username: req.Username,
 		Email:    req.Email,
 		Role:     req.Role,
 	}
-	
+
 	if err := s.userRepo.CreateUser(user, req.Password); err != nil {
 		if err.Error() == "UNIQUE constraint failed: users.username" {
 			respondWithError(w, http.StatusConflict, "Username already exists")
@@ -137,7 +137,7 @@ func (s *UserService) handleCreateUser(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "Failed to create user")
 		return
 	}
-	
+
 	respondWithJSON(w, http.StatusCreated, map[string]interface{}{
 		"user": user,
 	})
@@ -152,35 +152,35 @@ func (s *UserService) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Invalid user ID")
 		return
 	}
-	
+
 	// Get existing user
 	existingUser, err := s.userRepo.GetUserByID(r.Context(), userID)
 	if err != nil {
 		respondWithError(w, http.StatusNotFound, "User not found")
 		return
 	}
-	
+
 	// Parse request
 	var req struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`
 		Role     string `json:"role"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request")
 		return
 	}
-	
+
 	// Update user fields
 	if req.Username != "" {
 		existingUser.Username = req.Username
 	}
-	
+
 	if req.Email != "" {
 		existingUser.Email = req.Email
 	}
-	
+
 	if req.Role != "" {
 		// Check if role exists
 		_, err := s.roleRepo.GetRoleByName(r.Context(), req.Role)
@@ -190,7 +190,7 @@ func (s *UserService) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		}
 		existingUser.Role = req.Role
 	}
-	
+
 	// Update user
 	if err := s.userRepo.UpdateUser(existingUser); err != nil {
 		if err.Error() == "UNIQUE constraint failed: users.username" {
@@ -204,7 +204,7 @@ func (s *UserService) handleUpdateUser(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "Failed to update user")
 		return
 	}
-	
+
 	respondWithJSON(w, http.StatusOK, map[string]interface{}{
 		"user": existingUser,
 	})
@@ -219,26 +219,26 @@ func (s *UserService) handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusBadRequest, "Invalid user ID")
 		return
 	}
-	
+
 	// Get current user ID from context
 	currentUserID, ok := r.Context().Value("userID").(int64)
 	if !ok {
 		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
-	
+
 	// Prevent self-deletion
 	if userID == currentUserID {
 		respondWithError(w, http.StatusBadRequest, "Cannot delete your own account")
 		return
 	}
-	
+
 	// Delete user
 	if err := s.userRepo.DeleteUser(userID); err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to delete user")
 		return
 	}
-	
+
 	respondWithJSON(w, http.StatusOK, map[string]interface{}{
 		"message": "User deleted successfully",
 	})
@@ -252,27 +252,27 @@ func (s *UserService) handleGetProfile(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
-	
+
 	// Get user
 	user, err := s.userRepo.GetUserByID(r.Context(), userID)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to get user profile")
 		return
 	}
-	
+
 	// Get user permissions
 	permissions, err := s.permissionRepo.GetPermissionsForUser(r.Context(), userID)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to get user permissions")
 		return
 	}
-	
+
 	// Extract permission names
 	permissionNames := make([]string, len(permissions))
 	for i, p := range permissions {
 		permissionNames[i] = p.Name
 	}
-	
+
 	respondWithJSON(w, http.StatusOK, map[string]interface{}{
 		"profile": map[string]interface{}{
 			"id":          user.ID,
@@ -293,34 +293,34 @@ func (s *UserService) handleUpdateProfile(w http.ResponseWriter, r *http.Request
 		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
-	
+
 	// Get existing user
 	existingUser, err := s.userRepo.GetUserByID(r.Context(), userID)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to get user profile")
 		return
 	}
-	
+
 	// Parse request
 	var req struct {
 		Username string `json:"username"`
 		Email    string `json:"email"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request")
 		return
 	}
-	
+
 	// Update user fields
 	if req.Username != "" {
 		existingUser.Username = req.Username
 	}
-	
+
 	if req.Email != "" {
 		existingUser.Email = req.Email
 	}
-	
+
 	// Update user
 	if err := s.userRepo.UpdateUser(existingUser); err != nil {
 		if err.Error() == "UNIQUE constraint failed: users.username" {
@@ -334,7 +334,7 @@ func (s *UserService) handleUpdateProfile(w http.ResponseWriter, r *http.Request
 		respondWithError(w, http.StatusInternalServerError, "Failed to update profile")
 		return
 	}
-	
+
 	respondWithJSON(w, http.StatusOK, map[string]interface{}{
 		"profile": map[string]interface{}{
 			"id":         existingUser.ID,
@@ -354,49 +354,49 @@ func (s *UserService) handleChangePassword(w http.ResponseWriter, r *http.Reques
 		respondWithError(w, http.StatusUnauthorized, "Unauthorized")
 		return
 	}
-	
+
 	// Parse request
 	var req struct {
 		CurrentPassword string `json:"current_password"`
 		NewPassword     string `json:"new_password"`
 	}
-	
+
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		respondWithError(w, http.StatusBadRequest, "Invalid request")
 		return
 	}
-	
+
 	// Validate input
 	if req.CurrentPassword == "" || req.NewPassword == "" {
 		respondWithError(w, http.StatusBadRequest, "Current password and new password are required")
 		return
 	}
-	
+
 	// Get user
 	user, err := s.userRepo.GetUserByID(r.Context(), userID)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to get user")
 		return
 	}
-	
+
 	// Verify current password
 	valid, err := s.userRepo.VerifyPassword(user.Username, req.CurrentPassword)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to verify password")
 		return
 	}
-	
+
 	if !valid {
 		respondWithError(w, http.StatusUnauthorized, "Current password is incorrect")
 		return
 	}
-	
+
 	// Update password
 	if err := s.userRepo.UpdatePassword(userID, req.NewPassword); err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed to update password")
 		return
 	}
-	
+
 	respondWithJSON(w, http.StatusOK, map[string]interface{}{
 		"message": "Password updated successfully",
 	})

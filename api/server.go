@@ -1,8 +1,8 @@
 package api
 
 import (
-	"Inference_Engine/database"
-	"Inference_Engine/inference"
+	"Agentic_Engine/database"
+	"Agentic_Engine/inference"
 	"context"
 	"log"
 	"net/http"
@@ -20,10 +20,10 @@ type Server struct {
 
 // ServiceContainer holds all service instances
 type ServiceContainer struct {
-	AuthService         *AuthService
-	UserService         *UserService
-	OrchestrationService *WorkflowOrchestrationService
-	AnalyticsService    *AnalyticsService
+	AuthService           *AuthService
+	UserService           *UserService
+	OrchestrationService  *WorkflowOrchestrationService
+	AnalyticsService      *AnalyticsService
 	WebConnectionsService *WebConnectionsService
 }
 
@@ -39,10 +39,10 @@ func NewServer(
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Setup router with services
 	router := setupRouter(services)
-	
+
 	return &Server{
 		router: router,
 		httpServer: &http.Server{
@@ -65,37 +65,37 @@ func setupServices(
 	permissionRepo := database.NewPermissionRepository(authDB.GetDB())
 	roleRepo := database.NewRoleRepository(authDB.GetDB())
 	tokenRepo := database.NewTokenRepository(authDB.GetDB())
-	
+
 	// Create auth service
 	authService := NewAuthService(userRepo, tokenRepo, permissionRepo, jwtSecret, 24*time.Hour)
-	
+
 	// Create user service
 	userService := NewUserService(userRepo, permissionRepo, roleRepo)
-	
+
 	// Get agent collection
 	agentCollection, err := domainDB.GetOrCreateCollection("agents")
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Create agent repository (will be used when agent functionality is implemented)
 	_ = database.NewSimpleAgentRepository(agentCollection)
-	
+
 	// Create workflow orchestration service with core inference
 	workflowService := NewWorkflowOrchestrationService()
 	workflowService.SetInferenceService(coreInference)
-	
+
 	// Create web connections service
 	webConnectionsService := NewWebConnectionsService()
-	
+
 	// Create analytics service
 	analyticsService := NewAnalyticsService(workflowService)
-	
+
 	return &ServiceContainer{
-		AuthService:         authService,
-		UserService:         userService,
-		OrchestrationService: workflowService,
-		AnalyticsService:    analyticsService,
+		AuthService:           authService,
+		UserService:           userService,
+		OrchestrationService:  workflowService,
+		AnalyticsService:      analyticsService,
 		WebConnectionsService: webConnectionsService,
 	}, nil
 }
@@ -103,23 +103,23 @@ func setupServices(
 // setupRouter configures the Gin router with all service handlers
 func setupRouter(services *ServiceContainer) *mux.Router {
 	router := mux.NewRouter()
-	
+
 	// CORS middleware
 	router.Use(corsMiddleware)
-	
+
 	// Public routes
 	services.AuthService.RegisterHandlers(router)
-	
+
 	// Protected routes
 	protected := router.PathPrefix("/api/v1").Subrouter()
 	protected.Use(services.AuthService.AuthMiddleware)
-	
+
 	// Register service handlers
 	services.UserService.RegisterHandlers(router, services.AuthService)
 	services.OrchestrationService.RegisterHandlers(router)
 	services.AnalyticsService.RegisterHandlers(router)
 	services.WebConnectionsService.RegisterHandlers(router)
-	
+
 	return router
 }
 

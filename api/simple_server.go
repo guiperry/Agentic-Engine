@@ -9,8 +9,8 @@ import (
 	"strconv"
 	"time"
 
-	"Inference_Engine/database"
-	"Inference_Engine/inference"
+	"Agentic_Engine/database"
+	"Agentic_Engine/inference"
 
 	"github.com/gorilla/mux"
 )
@@ -25,7 +25,7 @@ type SimpleAPIServer struct {
 	dbPath             string
 	inferenceService   *inference.InferenceService
 	workflowService    *WorkflowOrchestrationService // Added workflow orchestration service
-	shutdownSignalChan chan<- struct{} // Channel to signal main to shut down
+	shutdownSignalChan chan<- struct{}               // Channel to signal main to shut down
 }
 
 // NewSimpleAPIServer creates a new simple API server
@@ -63,7 +63,7 @@ func NewSimpleAPIServer(port int, dbPath string, shutdownSignal chan<- struct{},
 		agentRepo:          agentRepo,
 		port:               port,
 		dbPath:             dbPath,
-		inferenceService:   infService, // Store the inference service
+		inferenceService:   infService,      // Store the inference service
 		workflowService:    workflowService, // Store the workflow service
 		router:             mux.NewRouter(), // Initialize the router for the APIServer instance
 		shutdownSignalChan: shutdownSignal,
@@ -135,7 +135,6 @@ func (s *SimpleAPIServer) handleShutdownRequest(w http.ResponseWriter, r *http.R
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintln(w, "Shutdown signal received by API server.")
 }
-
 
 // corsMiddleware adds CORS headers
 func (s *SimpleAPIServer) corsMiddleware(next http.Handler) http.Handler {

@@ -1,8 +1,8 @@
 package api
 
 import (
-	"Inference_Engine/database"
-	"Inference_Engine/inference"
+	"Agentic_Engine/database"
+	"Agentic_Engine/inference"
 	"context"
 	"log"
 	"net/http"
