@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Search, 
   Filter, 
@@ -22,6 +22,7 @@ import AgentDeploymentModal from './modals/AgentDeploymentModal';
 import AgentConfigModal from './modals/AgentConfigModal';
 import AdvancedFilterModal from './modals/AdvancedFilterModal';
 import AgentDetailModal from './modals/AgentDetailModal';
+import { fetchAgents, updateAgent, deleteAgent } from '../utils/api';
 
 export const AgentManager = () => {
   const [viewMode, setViewMode] = useState('grid');
@@ -34,6 +35,8 @@ export const AgentManager = () => {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [activeFilters, setActiveFilters] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const categories = [
     { id: 'all', name: 'All Agents' },
@@ -43,110 +46,70 @@ export const AgentManager = () => {
     { id: 'maintenance', name: 'Maintenance' },
   ];
 
-  const [agents, setAgents] = useState([
-    {
-      id: 1,
-      name: 'CyberPunk Agent #7804',
-      collection: 'CyberPunk Collective',
-      image: 'https://images.pexels.com/photos/5380664/pexels-photo-5380664.jpeg?auto=compress&cs=tinysrgb&w=400',
-      status: 'active',
-      currentTarget: 'Chrome Browser',
-      capability: 'Web Scraping Analysis',
-      deployedSince: '2 hours ago',
-      totalInferences: 247,
-      successRate: 98.7,
-      lastActivity: '2 minutes ago',
-      capabilities: ['Web Analysis', 'Data Extraction', 'Content Monitoring'],
-      targetTypes: ['Browser', 'Web APIs', 'Social Media'],
-      createdAt: '2023-12-15T10:30:00Z',
-      owner: 'Agent Master'
-    },
-    {
-      id: 2,
-      name: 'Data Miner #3749',
-      collection: 'Industrial Agents',
-      image: 'https://images.pexels.com/photos/5380617/pexels-photo-5380617.jpeg?auto=compress&cs=tinysrgb&w=400',
-      status: 'deployed',
-      currentTarget: 'Local File System',
-      capability: 'Document Classification',
-      deployedSince: '1 day ago',
-      totalInferences: 1847,
-      successRate: 94.2,
-      lastActivity: '5 minutes ago',
-      capabilities: ['File Analysis', 'Document Processing', 'Data Mining'],
-      targetTypes: ['File System', 'Databases', 'Archives'],
-      createdAt: '2023-11-20T14:45:00Z',
-      owner: 'Data Scientist'
-    },
-    {
-      id: 3,
-      name: 'Security Guardian #182',
-      collection: 'Defense Protocol',
-      image: 'https://images.pexels.com/photos/5380613/pexels-photo-5380613.jpeg?auto=compress&cs=tinysrgb&w=400',
-      status: 'monitoring',
-      currentTarget: 'Network Interface',
-      capability: 'Threat Detection',
-      deployedSince: '6 hours ago',
-      totalInferences: 892,
-      successRate: 99.1,
-      lastActivity: '12 minutes ago',
-      capabilities: ['Security Analysis', 'Threat Detection', 'Network Monitoring'],
-      targetTypes: ['Network', 'System Processes', 'Security Logs'],
-      createdAt: '2023-10-05T09:15:00Z',
-      owner: 'Security Team'
-    },
-    {
-      id: 4,
-      name: 'Code Reviewer #7894',
-      collection: 'Developer Tools',
-      image: 'https://images.pexels.com/photos/5380665/pexels-photo-5380665.jpeg?auto=compress&cs=tinysrgb&w=400',
-      status: 'idle',
-      currentTarget: null,
-      capability: null,
-      deployedSince: null,
-      totalInferences: 156,
-      successRate: 87.3,
-      lastActivity: '2 hours ago',
-      capabilities: ['Code Analysis', 'Quality Assessment', 'Bug Detection'],
-      targetTypes: ['IDE', 'Git Repositories', 'Code Files'],
-      createdAt: '2024-01-10T16:20:00Z',
-      owner: 'Development Team'
-    },
-    {
-      id: 5,
-      name: 'Media Processor #1256',
-      collection: 'Creative Suite',
-      image: 'https://images.pexels.com/photos/5380668/pexels-photo-5380668.jpeg?auto=compress&cs=tinysrgb&w=400',
-      status: 'active',
-      currentTarget: 'Adobe Photoshop',
-      capability: 'Image Enhancement',
-      deployedSince: '30 minutes ago',
-      totalInferences: 67,
-      successRate: 96.8,
-      lastActivity: '1 minute ago',
-      capabilities: ['Image Processing', 'Media Analysis', 'Creative Enhancement'],
-      targetTypes: ['Creative Software', 'Media Files', 'Design Tools'],
-      createdAt: '2024-02-05T11:30:00Z',
-      owner: 'Design Team'
-    },
-    {
-      id: 6,
-      name: 'System Monitor #4523',
-      collection: 'Operations Center',
-      image: 'https://images.pexels.com/photos/5380671/pexels-photo-5380671.jpeg?auto=compress&cs=tinysrgb&w=400',
-      status: 'maintenance',
-      currentTarget: null,
-      capability: null,
-      deployedSince: null,
-      totalInferences: 2341,
-      successRate: 91.7,
-      lastActivity: '1 day ago',
-      capabilities: ['System Monitoring', 'Performance Analysis', 'Resource Management'],
-      targetTypes: ['Operating System', 'Hardware', 'System Processes'],
-      createdAt: '2023-09-18T08:45:00Z',
-      owner: 'Operations Team'
-    }
-  ]);
+  const [agents, setAgents] = useState([]);
+
+  // Fetch agents from the API
+  useEffect(() => {
+    const loadAgents = async () => {
+      try {
+        setIsLoading(true);
+        // Assuming user ID 1 for now - in a real app, this would come from auth context
+        const fetchedAgents = await fetchAgents(1);
+        
+        // Transform the API response to match our UI format
+        const formattedAgents = fetchedAgents.map(agent => ({
+          id: agent.id,
+          name: agent.name,
+          collection: agent.collection || '',
+          image: agent.image_url || 'https://images.pexels.com/photos/5380664/pexels-photo-5380664.jpeg?auto=compress&cs=tinysrgb&w=400',
+          status: agent.status || 'idle',
+          currentTarget: null, // These would come from deployment data in a real app
+          capability: null,
+          deployedSince: null,
+          totalInferences: 0,
+          successRate: 0,
+          lastActivity: agent.updated_at ? new Date(agent.updated_at).toLocaleString() : 'Never',
+          capabilities: agent.capabilities || [],
+          targetTypes: agent.target_types || [],
+          createdAt: agent.created_at || new Date().toISOString(),
+          owner: 'User',
+          type: agent.type || 'standard',
+          config: agent.config || '{}'
+        }));
+        
+        setAgents(formattedAgents);
+        setError(null);
+      } catch (err) {
+        console.error('Failed to fetch agents:', err);
+        setError('Failed to load agents. Please try again later.');
+        
+        // Fallback to sample data for demo purposes
+        setAgents([
+          {
+            id: '1',
+            name: 'CyberPunk Agent #7804',
+            collection: 'CyberPunk Collective',
+            image: 'https://images.pexels.com/photos/5380664/pexels-photo-5380664.jpeg?auto=compress&cs=tinysrgb&w=400',
+            status: 'idle',
+            currentTarget: null,
+            capability: null,
+            deployedSince: null,
+            totalInferences: 0,
+            successRate: 0,
+            lastActivity: 'Never',
+            capabilities: ['Web Analysis', 'Data Extraction', 'Content Monitoring'],
+            targetTypes: ['Browser', 'Web APIs', 'Social Media'],
+            createdAt: new Date().toISOString(),
+            owner: 'User'
+          }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadAgents();
+  }, []);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -261,26 +224,134 @@ export const AgentManager = () => {
   });
 
   const handleAgentCreated = (newAgent) => {
-    setAgents(prevAgents => [...prevAgents, { ...newAgent, id: prevAgents.length + 1 }]);
+    // Add the new agent to the UI state
+    setAgents(prevAgents => [...prevAgents, {
+      id: newAgent.id,
+      name: newAgent.name,
+      collection: newAgent.collection || '',
+      image: newAgent.image_url || 'https://images.pexels.com/photos/5380664/pexels-photo-5380664.jpeg?auto=compress&cs=tinysrgb&w=400',
+      status: newAgent.status || 'idle',
+      currentTarget: null,
+      capability: null,
+      deployedSince: null,
+      totalInferences: 0,
+      successRate: 0,
+      lastActivity: 'Just now',
+      capabilities: newAgent.capabilities || [],
+      targetTypes: newAgent.target_types || [],
+      createdAt: newAgent.created_at || new Date().toISOString(),
+      owner: 'User',
+      type: newAgent.type || 'standard',
+      config: newAgent.config || '{}'
+    }]);
     setIsCreationModalOpen(false);
   };
 
-  const handleAgentDeployed = (updatedAgent) => {
-    setAgents(prevAgents => 
-      prevAgents.map(agent => 
-        agent.id === updatedAgent.id ? updatedAgent : agent
-      )
-    );
+  const handleAgentDeployed = async (updatedAgent) => {
+    try {
+      // Parse the current config if it exists
+      let configObj = {};
+      try {
+        const agent = agents.find(a => a.id === updatedAgent.id);
+        if (agent && agent.config) {
+          configObj = JSON.parse(agent.config);
+        }
+      } catch (e) {
+        console.warn('Failed to parse current agent config:', e);
+      }
+      
+      // Update the config with deployment information
+      configObj = {
+        ...configObj,
+        collection: updatedAgent.collection,
+        image_url: updatedAgent.image,
+        capabilities: updatedAgent.capabilities,
+        target_types: updatedAgent.targetTypes,
+        status: 'active',
+        current_target: updatedAgent.currentTarget,
+        capability: updatedAgent.capability,
+        deployed_at: new Date().toISOString()
+      };
+      
+      // Update the agent in the backend
+      const apiAgent = {
+        name: updatedAgent.name,
+        type: updatedAgent.type || 'standard',
+        config: JSON.stringify(configObj)
+      };
+      
+      await updateAgent(updatedAgent.id, apiAgent);
+      
+      // Update the UI with the deployed agent
+      const deployedAgent = {
+        ...updatedAgent,
+        status: 'active',
+        deployedSince: 'Just now',
+        lastActivity: 'Just now'
+      };
+      
+      setAgents(prevAgents => 
+        prevAgents.map(agent => 
+          agent.id === updatedAgent.id ? deployedAgent : agent
+        )
+      );
+    } catch (error) {
+      console.error('Error deploying agent:', error);
+      // Handle error (e.g., show notification)
+    }
+    
     setIsDeploymentModalOpen(false);
     setSelectedAgent(null);
   };
 
-  const handleAgentUpdated = (updatedAgent) => {
-    setAgents(prevAgents => 
-      prevAgents.map(agent => 
-        agent.id === updatedAgent.id ? updatedAgent : agent
-      )
-    );
+  const handleAgentUpdated = async (updatedAgent) => {
+    try {
+      // Parse the current config if it exists
+      let configObj = {};
+      try {
+        const agent = agents.find(a => a.id === updatedAgent.id);
+        if (agent && agent.config) {
+          configObj = JSON.parse(agent.config);
+        }
+      } catch (e) {
+        console.warn('Failed to parse current agent config:', e);
+      }
+      
+      // Update the config with new information
+      configObj = {
+        ...configObj,
+        collection: updatedAgent.collection,
+        image_url: updatedAgent.image,
+        capabilities: updatedAgent.capabilities,
+        target_types: updatedAgent.targetTypes,
+        status: updatedAgent.status || 'idle'
+      };
+      
+      // Update the agent in the backend
+      const apiAgent = {
+        name: updatedAgent.name,
+        type: updatedAgent.type || 'standard',
+        config: JSON.stringify(configObj)
+      };
+      
+      await updateAgent(updatedAgent.id, apiAgent);
+      
+      // Update the UI
+      const updatedUIAgent = {
+        ...updatedAgent,
+        lastActivity: 'Just now'
+      };
+      
+      setAgents(prevAgents => 
+        prevAgents.map(agent => 
+          agent.id === updatedAgent.id ? updatedUIAgent : agent
+        )
+      );
+    } catch (error) {
+      console.error('Error updating agent:', error);
+      // Handle error (e.g., show notification)
+    }
+    
     setIsConfigModalOpen(false);
     setSelectedAgent(null);
   };
@@ -300,21 +371,54 @@ export const AgentManager = () => {
     setIsDetailModalOpen(true);
   };
 
-  const handleStopAgent = (agent) => {
-    // In a real implementation, this would call an API to stop the agent
-    const updatedAgent = {
-      ...agent,
-      status: 'idle',
-      currentTarget: null,
-      capability: null,
-      deployedSince: null
-    };
-    
-    setAgents(prevAgents => 
-      prevAgents.map(a => 
-        a.id === agent.id ? updatedAgent : a
-      )
-    );
+  const handleStopAgent = async (agent) => {
+    try {
+      // Parse the current config if it exists
+      let configObj = {};
+      try {
+        if (agent.config) {
+          configObj = JSON.parse(agent.config);
+        }
+      } catch (e) {
+        console.warn('Failed to parse current agent config:', e);
+      }
+      
+      // Update the config to set the agent to idle
+      configObj = {
+        ...configObj,
+        status: 'idle',
+        current_target: null,
+        capability: null,
+        deployed_at: null
+      };
+      
+      // Update the agent in the backend
+      const apiAgent = {
+        config: JSON.stringify(configObj)
+      };
+      
+      await updateAgent(agent.id, apiAgent);
+      
+      // Create updated agent with idle status for UI
+      const updatedAgent = {
+        ...agent,
+        status: 'idle',
+        currentTarget: null,
+        capability: null,
+        deployedSince: null,
+        lastActivity: 'Just now'
+      };
+      
+      // Update the UI
+      setAgents(prevAgents => 
+        prevAgents.map(a => 
+          a.id === agent.id ? updatedAgent : a
+        )
+      );
+    } catch (error) {
+      console.error('Error stopping agent:', error);
+      // Handle error (e.g., show notification)
+    }
   };
 
   // Format the active filters for display
@@ -356,11 +460,17 @@ export const AgentManager = () => {
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">NFT-Agent Manager</h1>
           <p className="text-slate-400">Deploy and manage your agentic NFTs across target systems and environments.</p>
+          {error && (
+            <div className="mt-2 p-2 bg-red-500/20 border border-red-500/30 rounded-lg text-red-300">
+              {error}
+            </div>
+          )}
         </div>
         <div className="mt-4 lg:mt-0">
           <button 
             onClick={() => setIsCreationModalOpen(true)}
             className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 flex items-center space-x-2"
+            disabled={isLoading}
           >
             <Plus className="w-5 h-5" />
             <span>Create Agent</span>
@@ -437,7 +547,31 @@ export const AgentManager = () => {
       </div>
 
       {/* Agent Grid/List */}
-      {viewMode === 'grid' ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center p-12">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-slate-300">Loading agents...</p>
+          </div>
+        </div>
+      ) : filteredAgents.length === 0 ? (
+        <div className="flex flex-col items-center justify-center p-12 bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50">
+          <Bot className="w-16 h-16 text-slate-500 mb-4" />
+          <h3 className="text-xl font-bold text-white mb-2">No Agents Found</h3>
+          <p className="text-slate-400 text-center max-w-md mb-6">
+            {searchTerm || activeFilters.length > 0 || selectedCategory !== 'all' 
+              ? "No agents match your current filters. Try adjusting your search criteria."
+              : "You don't have any agents yet. Create your first agent to get started."}
+          </p>
+          <button 
+            onClick={() => setIsCreationModalOpen(true)}
+            className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-6 py-3 rounded-lg font-medium hover:from-purple-600 hover:to-blue-600 transition-all duration-200 flex items-center space-x-2"
+          >
+            <Plus className="w-5 h-5" />
+            <span>Create Agent</span>
+          </button>
+        </div>
+      ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           {filteredAgents.map((agent) => (
             <div key={agent.id} className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 hover:border-slate-600/50 transition-all duration-300 group overflow-hidden">

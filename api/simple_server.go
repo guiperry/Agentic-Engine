@@ -29,7 +29,7 @@ type SimpleAPIServer struct {
 }
 
 // NewSimpleAPIServer creates a new simple API server
-func NewSimpleAPIServer(port int, dbPath string, shutdownSignal chan<- struct{}) (*SimpleAPIServer, error) {
+func NewSimpleAPIServer(port int, dbPath string, shutdownSignal chan<- struct{}, inferenceService *inference.InferenceService) (*SimpleAPIServer, error) {
 	log.Println("Initializing SimpleAPIServer...") // TODO: Remove this line
 	// Initialize database
 	db, err := database.NewSimpleDomainDB(dbPath) // Use the passed dbPath

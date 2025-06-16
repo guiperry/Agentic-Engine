@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  BarChart3, 
-  PieChart, 
+import {
+  TrendingUp,
+  TrendingDown,
+  BarChart3,
+  PieChart,
   Activity,
   Clock,
   Zap,
@@ -13,7 +13,9 @@ import {
   Bot,
   GitBranch,
   RefreshCw,
-  Calendar
+  Calendar,
+  CheckCircle,
+  AlertCircle
 } from 'lucide-react';
 
 export const AnalyticsDashboard = () => {

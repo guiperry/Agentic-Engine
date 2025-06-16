@@ -169,11 +169,22 @@ export const InferenceOrchestrator = () => {
       endTime: '2024-01-15T10:28:10Z',
       duration: '10.0s',
       result: 'Error: Insufficient permissions to access editor workspace',
+      errorDetails: {
+        code: 'PERMISSION_DENIED',
+        message: 'The agent does not have sufficient permissions to access the VS Code workspace',
+        resolution: 'Grant additional permissions in the Agent Manager or use a different target'
+      },
       dataExtracted: null,
-      successRate: 0
+      successRate: 0,
+      retryAvailable: true
     }
   ];
 
+  /**
+   * Get the appropriate status icon based on the orchestration status
+   * @param {string} status - The status of the orchestration
+   * @returns {JSX.Element} The icon component to display
+   */
   const getStatusIcon = (status) => {
     switch (status) {
       case 'completed':
@@ -182,11 +193,22 @@ export const InferenceOrchestrator = () => {
         return <Loader className="w-5 h-5 text-blue-400 animate-spin" />;
       case 'failed':
         return <AlertCircle className="w-5 h-5 text-red-400" />;
+      case 'warning':
+        return <AlertCircle className="w-5 h-5 text-yellow-400" />;
+      case 'pending':
+        return <Clock className="w-5 h-5 text-purple-400" />;
+      case 'cancelled':
+        return <Square className="w-5 h-5 text-slate-400" />;
       default:
         return <Clock className="w-5 h-5 text-slate-400" />;
     }
   };
 
+  /**
+   * Get the appropriate CSS classes for styling based on the orchestration status
+   * @param {string} status - The status of the orchestration
+   * @returns {string} CSS classes for styling the status indicator
+   */
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed':
@@ -195,18 +217,52 @@ export const InferenceOrchestrator = () => {
         return 'text-blue-400 bg-blue-500/20 border-blue-500/30';
       case 'failed':
         return 'text-red-400 bg-red-500/20 border-red-500/30';
+      case 'warning':
+        return 'text-yellow-400 bg-yellow-500/20 border-yellow-500/30';
+      case 'pending':
+        return 'text-purple-400 bg-purple-500/20 border-purple-500/30';
+      case 'cancelled':
+        return 'text-slate-400 bg-slate-500/20 border-slate-500/30';
       default:
         return 'text-slate-400 bg-slate-500/20 border-slate-500/30';
     }
   };
 
+  /**
+   * Handle the execution of the orchestration workflow
+   * Validates selections, runs the workflow, and handles success/failure
+   * @returns {void}
+   */
   const handleRunOrchestration = () => {
-    if (!selectedAgent || !selectedTarget || !selectedCapability) return;
+    // Validate all required selections are made
+    if (!selectedAgent || !selectedTarget || !selectedCapability) {
+      alert('Please select an agent, target, and capability before running the workflow.');
+      return;
+    }
+    
+    // Set running state
     setIsRunning(true);
-    // Simulate orchestration running
-    setTimeout(() => {
+    
+    // Simulate orchestration running with proper error handling
+    try {
+      // In a real implementation, this would be an API call to the orchestration service
+      setTimeout(() => {
+        // Simulate successful completion
+        setIsRunning(false);
+        
+        // Add success notification here if needed
+        console.log('Orchestration completed successfully', {
+          agent: selectedAgent.name,
+          target: selectedTarget.name,
+          capability: selectedCapability.name
+        });
+      }, 8000);
+    } catch (error) {
+      // Handle any errors that might occur during orchestration
       setIsRunning(false);
-    }, 8000);
+      console.error('Orchestration failed:', error);
+      alert(`Orchestration failed: ${error.message || 'Unknown error'}`);
+    }
   };
 
   return (

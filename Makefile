@@ -243,6 +243,34 @@ upgradeable:
 # ==================================================================================== #
 
 OUTPUT_DIR := /tmp/bin
+GUI_DIR := ./gui
+
+## frontend/install: install frontend dependencies
+.PHONY: frontend/install
+frontend/install:
+	@echo "Installing frontend dependencies..."
+	@cd $(GUI_DIR) && npm install
+	@echo "Frontend dependencies installed."
+
+## frontend/dev: run frontend development server
+.PHONY: frontend/dev
+frontend/dev:
+	@echo "Starting frontend development server..."
+	@cd $(GUI_DIR) && npm run dev
+
+## frontend/build: build frontend for production
+.PHONY: frontend/build
+frontend/build:
+	@echo "Building frontend for production..."
+	@cd $(GUI_DIR) && npm run build
+	@echo "Frontend production build complete."
+
+## frontend/test: run frontend tests
+.PHONY: frontend/test
+frontend/test:
+	@echo "Running frontend tests..."
+	@cd $(GUI_DIR) && npm run test
+	@echo "Frontend tests completed."
 
 ## tidy: tidy modfiles and format .go files
 .PHONY: tidy
@@ -296,13 +324,37 @@ generate/wrapper:
 	@chmod +x ./run_wrapper.sh
 	@echo "run_wrapper.sh generated. Make sure to adjust BINARY_NAME inside the script if needed."
 
-## run: run the  application
+## run: run the backend application
 .PHONY: run
-run: build
+run: ./build_and_run.sh
 	@echo "Running ${OUTPUT_DIR}/${BINARY_NAME}..."
 	${OUTPUT_DIR}/${BINARY_NAME}
 
-## run/live: run the application with reloading on file changes
+## run/full: run both backend and frontend in development mode
+.PHONY: run/full
+run/full:
+	@echo "Starting full development environment (backend + frontend)..."
+	@echo "Run these commands in separate terminals:"
+	@echo "1. Backend: make run/live"
+	@echo "2. Frontend: make frontend/dev"
+
+## build/full: build both backend and frontend for production with embedded assets
+.PHONY: build/full
+build/full: frontend/build
+	@echo "Building Go binary with embedded frontend assets..."
+	@mkdir -p ${OUTPUT_DIR}
+	go build -o=${OUTPUT_DIR}/${BINARY_NAME} ${MAIN_PACKAGE_PATH}
+	@echo "Full production build complete with embedded frontend assets."
+
+## build/embed: build production binary with embedded frontend assets
+.PHONY: build/embed
+build/embed: frontend/build
+	@echo "Building Go binary with embedded frontend assets..."
+	@mkdir -p ${OUTPUT_DIR}
+	go build -tags embed -o=${OUTPUT_DIR}/${BINARY_NAME} ${MAIN_PACKAGE_PATH}
+	@echo "Production binary with embedded frontend assets built."
+
+## run/live: run the backend with reloading on file changes
 .PHONY: run/live
 run/live:
 	go run github.com/cosmtrek/air@v1.43.0 \
@@ -310,6 +362,22 @@ run/live:
 	--build.exclude_dir "" \
 	--build.include_ext "go, tpl, tmpl, html, css, scss, js, ts, sql, jpeg, jpg, gif, png, bmp, svg, webp, ico" \
 	--misc.clean_on_exit "true"
+
+## dev: start full development environment with backend and frontend
+.PHONY: dev
+dev:
+	@echo "Starting full development environment..."
+	@echo "Backend (with live reload): http://localhost:8080"
+	@echo "Frontend: http://localhost:5173"
+	@echo "Run these commands in separate terminals:"
+	@echo "1. Backend: make run/live"
+	@echo "2. Frontend: make frontend/dev"
+
+## run/embed: run production binary with embedded frontend
+.PHONY: run/embed
+run/embed: build/embed
+	@echo "Running production binary with embedded frontend..."
+	${OUTPUT_DIR}/${BINARY_NAME}
 
 ## push: push changes to the remote Git repository
 .PHONY: push

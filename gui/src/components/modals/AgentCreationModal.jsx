@@ -8,6 +8,7 @@ import {
   Target,
   Bot
 } from 'lucide-react';
+import { createAgent } from '../../utils/api';
 
 const AgentCreationModal = ({ isOpen, onClose, onAgentCreated }) => {
   const [formData, setFormData] = useState({
@@ -159,46 +160,30 @@ const AgentCreationModal = ({ isOpen, onClose, onAgentCreated }) => {
     setSubmitStatus(null);
     
     try {
-      // In a real implementation, this would be an API call
-      // For now, we'll simulate a successful API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Prepare the agent data for the API
-      const agentData = {
-        name: formData.name,
+      // Prepare the config object with frontend-specific data
+      const configObj = {
         collection: formData.collection,
         image_url: formData.imageURL,
-        status: 'idle', // Default status for new agents
         capabilities: formData.capabilities,
         target_types: formData.targetTypes,
-        owner_id: 1, // Assuming user ID 1 for now
-        token_id: Math.floor(Math.random() * 10000).toString(), // Generate a random token ID
-        contract_addr: '0x123...' // Placeholder contract address
+        status: 'idle'
       };
       
-      // Simulate API call
-      // const response = await fetch('/api/v1/agents', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(agentData),
-      // });
+      // Prepare the agent data for the API according to the backend model
+      const agentData = {
+        name: formData.name,
+        type: 'standard', // Default type for new agents
+        config: JSON.stringify(configObj)
+      };
       
-      // if (!response.ok) {
-      //   throw new Error('Failed to create agent');
-      // }
-      
-      // const data = await response.json();
+      // Make the API call to create the agent
+      const createdAgent = await createAgent(agentData);
       
       setSubmitStatus('success');
       
       // Notify parent component of successful creation
       if (onAgentCreated) {
-        onAgentCreated({
-          id: Date.now(), // Temporary ID for demo
-          ...agentData
-        });
+        onAgentCreated(createdAgent);
       }
       
       // Reset form after successful submission

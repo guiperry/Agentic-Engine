@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"embed"
 	"flag"
 	"fmt"
+	"io/fs"
 	"log"
 	"net/http"
 	"os"
@@ -89,8 +91,11 @@ func main() {
 
 	shutdownFromAPIChan := make(chan struct{}, 1) // Channel to signal shutdown from API
 
-	// Create and start API server
-	apiServer, err := api.NewServer(authDB, domainDB, inferenceService, jwtSecret)
+	// Create shutdown channel for API server
+	apiShutdownChan := make(chan struct{}, 1)
+
+	// Create and start API server with inference service
+	apiServer, err := api.NewSimpleAPIServer(8080, domainDBPath, apiShutdownChan, inferenceService)
 	if err != nil {
 		log.Fatalf("Failed to create API server: %v", err)
 	}
@@ -216,31 +221,38 @@ func openBrowser(url string) error {
 	return exec.Command(cmd, args...).Start()
 }
 
-// serveStaticGUI serves the built React GUI (alternative to dev server)
-func serveStaticGUI(port int, serverPtr **http.Server) error {
-	guiDistDir := "./gui/dist"
+//go:embed gui/dist/*
+var embeddedGUI embed.FS
 
-	// Check if dist directory exists
-	if _, err := os.Stat(guiDistDir); os.IsNotExist(err) {
-		return fmt.Errorf("GUI dist directory not found: %s. Run 'npm run build' in the gui directory first", guiDistDir)
+// serveStaticGUI serves the built React GUI from embedded files
+func serveStaticGUI(port int, serverPtr **http.Server) error {
+	// Create filesystem from embedded assets
+	subFS, err := fs.Sub(embeddedGUI, "gui/dist")
+	if err != nil {
+		return fmt.Errorf("failed to create embedded filesystem: %w", err)
 	}
-	fs := http.FileServer(http.Dir(guiDistDir))
+
 	mux := http.NewServeMux()
 
 	// Create a custom handler to support client-side routing
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		// Check if the requested file exists
-		path := filepath.Join(guiDistDir, r.URL.Path)
-		statInfo, err := os.Stat(path)
+		// Try to serve the requested file
+		filePath := r.URL.Path
+		if filePath == "/" {
+			filePath = "/index.html"
+		}
 
-		// If the file exists, serve it directly
-		if err == nil && !statInfo.IsDir() {
-			fs.ServeHTTP(w, r)
+		// Check if file exists in embedded FS
+		_, err := embeddedGUI.Open("gui/dist" + filePath)
+		if err == nil {
+			// Serve the requested file directly
+			http.FileServer(http.FS(subFS)).ServeHTTP(w, r)
 			return
 		}
 
-		// For all other routes, serve the index.html file to support client-side routing
-		http.ServeFile(w, r, filepath.Join(guiDistDir, "index.html"))
+		// For all other routes, serve index.html for SPA routing
+		// For SPA routing, serve index.html from the embedded filesystem
+		http.ServeFile(w, r, filepath.Join("gui/dist", "index.html"))
 	})
 
 	log.Printf("🎨 Serving static GUI on port %d...", port)
@@ -250,6 +262,6 @@ func serveStaticGUI(port int, serverPtr **http.Server) error {
 	}
 	*serverPtr = server // Assign the server instance to the provided pointer
 
-	err := server.ListenAndServe()
-	return err
+	return server.ListenAndServe()
+	
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Settings as SettingsIcon,
   User,
@@ -90,6 +90,10 @@ export const Settings = () => {
     loadAvailableModels();
   }, []);
 
+  /**
+   * Load API keys from localStorage or backend
+   * @returns {Promise<void>}
+   */
   const loadApiKeys = async () => {
     try {
       // In a real implementation, you'd fetch from your backend
@@ -105,27 +109,80 @@ export const Settings = () => {
       });
     } catch (error) {
       console.error('Failed to load API keys:', error);
+      // Display error notification to user
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Error loading API keys: ${errorMessage}`);
     }
   };
 
+  /**
+   * Load available models from the inference service
+   * @returns {Promise<void>}
+   */
   const loadAvailableModels = async () => {
+    // Default models to use as fallback
+    const defaultModels = {
+      primary: ['llama-4-scout-17b-16e-instruct', 'gpt-4', 'claude-3-sonnet'],
+      fallback: ['gemini-1.5-flash-latest', 'deepseek-chat', 'gemini-1.5-pro-latest']
+    };
+
     try {
       // Fetch available models from the inference service
       const response = await fetch('/api/v1/inference/models');
+      // Read the response as text first to allow inspection even if not JSON
+      const responseText = await response.text();
+
       if (response.ok) {
-        const data = await response.json();
-        setAvailableModels(data);
+        try {
+          const data = JSON.parse(responseText); // Try to parse the text as JSON
+          
+          // Validate the data structure
+          if (data && typeof data === 'object' && 
+              Array.isArray(data.primary) && Array.isArray(data.fallback)) {
+            setAvailableModels(data);
+          } else {
+            throw new Error('Invalid data structure received from server');
+          }
+        } catch (parseError) {
+          console.error('Failed to parse JSON response for available models:', parseError);
+          console.error('Raw server response text (status OK):', responseText);
+          
+          // Show error to user
+          const errorMessage = parseError instanceof Error ? parseError.message : 'Unknown parsing error';
+          alert(`Error parsing available models: ${errorMessage}`);
+          
+          // Fallback to default models if JSON parsing fails
+          setAvailableModels(defaultModels);
+        }
+      } else {
+        const errorMessage = `Server responded with status ${response.status}`;
+        console.error('Failed to load available models:', errorMessage);
+        console.error('Raw server response text (status not OK):', responseText);
+        
+        // Show error to user
+        alert(`Error loading available models: ${errorMessage}`);
+        
+        // Fallback to default models
+        setAvailableModels(defaultModels);
       }
-    } catch (error) {
-      console.error('Failed to load available models:', error);
+    } catch (networkError) {
+      console.error('Network error when fetching available models:', networkError);
+      
+      // Show error to user
+      const errorMessage = networkError instanceof Error ? networkError.message : 'Unknown network error';
+      alert(`Network error loading available models: ${errorMessage}`);
+      
       // Fallback to default models
-      setAvailableModels({
-        primary: ['llama-4-scout-17b-16e-instruct', 'gpt-4', 'claude-3-sonnet'],
-        fallback: ['gemini-1.5-flash-latest', 'deepseek-chat', 'gemini-1.5-pro-latest']
-      });
+      setAvailableModels(defaultModels);
     }
   };
 
+  /**
+   * Save API key to localStorage and backend
+   * @param {string} provider - The API provider name
+   * @param {string} key - The API key to save
+   * @returns {Promise<void>}
+   */
   const saveApiKey = async (provider, key) => {
     try {
       // Save to localStorage (in production, you'd send to backend)
@@ -148,12 +205,25 @@ export const Settings = () => {
         setTimeout(() => {
           setKeysSaved(prev => ({ ...prev, [provider]: false }));
         }, 3000);
+      } else {
+        // Handle non-OK response
+        const responseText = await response.text();
+        throw new Error(`Server responded with status ${response.status}: ${responseText}`);
       }
     } catch (error) {
       console.error(`Failed to save ${provider} API key:`, error);
+      // Display error notification to user
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Error saving ${provider} API key: ${errorMessage}`);
     }
   };
 
+  /**
+   * Set the MOA model for primary or fallback
+   * @param {string} type - The model type ('primary' or 'fallback')
+   * @param {string} model - The model name to set
+   * @returns {Promise<void>}
+   */
   const setMoaModel = async (type, model) => {
     try {
       const response = await fetch(`/api/v1/inference/moa/${type}`, {
@@ -166,9 +236,16 @@ export const Settings = () => {
 
       if (response.ok) {
         setMoaSettings(prev => ({ ...prev, [`${type}Model`]: model }));
+      } else {
+        // Handle non-OK response
+        const responseText = await response.text();
+        throw new Error(`Server responded with status ${response.status}: ${responseText}`);
       }
     } catch (error) {
       console.error(`Failed to set MOA ${type} model:`, error);
+      // Display error notification to user
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Error setting ${type} model: ${errorMessage}`);
     }
   };
 

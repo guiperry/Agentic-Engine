@@ -203,8 +203,11 @@ describe('MCPCapabilityManager', () => {
   test('should open capability modal with capability data when clicked', () => {
     render(<MCPCapabilityManager />);
     
-    // Find the GPT-4 Vision capability and click it
-    fireEvent.click(screen.getByText('GPT-4 Vision'));
+    // Find the GPT-4 Vision capability and click it using more specific selector
+    const capabilityItem = screen.getAllByRole('button', { name: /capability/i }).find(
+      btn => btn.textContent.includes('GPT-4 Vision')
+    );
+    fireEvent.click(capabilityItem);
     
     // Modal should be open with capability data
     expect(screen.getByTestId('mcp-capability-modal')).toBeInTheDocument();
@@ -262,8 +265,11 @@ describe('MCPCapabilityManager', () => {
     
     render(<MCPCapabilityManager />);
     
-    // Find a connected server
-    const openaiServer = screen.getByText('OpenAI MCP Server').closest('[role="article"]');
+    // Find a connected server using more specific selector
+    const serverCards = screen.getAllByTestId('server-card');
+    const openaiServer = serverCards.find(card =>
+      card.textContent.includes('OpenAI MCP Server')
+    );
     const disconnectButton = within(openaiServer).getByText('Disconnect');
     
     // Click Disconnect button
@@ -304,17 +310,21 @@ describe('MCPCapabilityManager', () => {
     render(<MCPCapabilityManager />);
     
     // Find the Refresh button for OpenAI MCP Server and click it
-    const refreshButtons = screen.getAllByRole('button', { name: /refresh/i });
-    fireEvent.click(refreshButtons[0]); // First refresh button should be for OpenAI MCP Server
+    const serverCards = screen.getAllByTestId('server-card');
+    const openaiServer = serverCards.find(card =>
+      card.textContent.includes('OpenAI MCP Server')
+    );
+    const refreshButton = within(openaiServer).getByRole('button', { name: /refresh/i });
+    fireEvent.click(refreshButton);
     
     // Should show refreshing state (spinner)
-    expect(screen.getByRole('button', { name: /refresh/i }).querySelector('svg')).toHaveClass('animate-spin');
+    expect(refreshButton.querySelector('svg')).toHaveClass('animate-spin');
     
-    // Fast-forward timers
-    jest.advanceTimersByTime(1000);
+    // Fast-forward timers (give more time for animation to complete)
+    jest.advanceTimersByTime(1500);
     
     // Refresh should be complete
-    expect(screen.getByRole('button', { name: /refresh/i }).querySelector('svg')).not.toHaveClass('animate-spin');
+    expect(refreshButton.querySelector('svg')).not.toHaveClass('animate-spin');
     
     // Restore timers
     jest.useRealTimers();

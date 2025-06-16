@@ -67,7 +67,7 @@ const LoginPage = ({ onLogin }) => {
     setApiError('');
     
     try {
-      const endpoint = isLogin ? '/api/v1/auth/login' : '/api/v1/auth/register';
+      const endpoint = isLogin ? 'http://localhost:8080/api/v1/auth/login' : 'http://localhost:8080/api/v1/auth/register';
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -80,23 +80,39 @@ const LoginPage = ({ onLogin }) => {
         }),
       });
       
-      const data = await response.json();
+      // Clone response before reading to allow multiple reads
+      const responseClone = response.clone();
+      
+      let data;
+      try {
+        data = await response.json();
+      } catch (error) {
+        // If JSON parse fails, try reading as text
+        const text = await responseClone.text();
+        console.error('Raw server response:', text);
+        console.error('Response status:', response.status);
+        console.error('Response headers:', Object.fromEntries(response.headers.entries()));
+        throw new Error(text || 'Invalid server response');
+      }
       
       if (!response.ok) {
-        throw new Error(data.error || 'Authentication failed');
+        throw new Error(data?.error || 'Authentication failed');
       }
       
       // Store token in localStorage
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      console.log('Stored token:', data.token);
       
       // Call onLogin callback
       if (onLogin) {
+        console.log('Calling onLogin callback');
         onLogin(data.user);
       }
       
-      // Redirect to dashboard
-      navigate('/dashboard');
+      // Redirect to dashboard with full page reload
+      console.log('Navigating to dashboard');
+      window.location.href = '/dashboard';
       
     } catch (error) {
       console.error('Authentication error:', error);
