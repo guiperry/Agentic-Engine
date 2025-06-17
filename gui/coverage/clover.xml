@@ -4,7 +4,7 @@
     <metrics statements="3092" coveredstatements="1069" conditionals="2690" coveredconditionals="864" methods="913" coveredmethods="284" elements="6695" coveredelements="2217" complexity="0" loc="3092" ncloc="3092" packages="5" files="38" classes="38"/>
     <package name="src">
       <metrics statements="23" coveredstatements="4" conditionals="2" coveredconditionals="0" methods="14" coveredmethods="1"/>
-      <file name="App.tsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/App.tsx">
+      <file name="App.tsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/App.tsx">
         <metrics statements="23" coveredstatements="4" conditionals="2" coveredconditionals="0" methods="14" coveredmethods="1"/>
         <line num="20" count="18" type="stmt"/>
         <line num="21" count="16" type="stmt"/>
@@ -33,7 +33,7 @@
     </package>
     <package name="src.components">
       <metrics statements="1756" coveredstatements="388" conditionals="1272" coveredconditionals="225" methods="551" coveredmethods="105"/>
-      <file name="APITokens.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/APITokens.jsx">
+      <file name="APITokens.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/APITokens.jsx">
         <metrics statements="103" coveredstatements="1" conditionals="66" coveredconditionals="0" methods="27" coveredmethods="0"/>
         <line num="16" count="1" type="stmt"/>
         <line num="17" count="0" type="stmt"/>
@@ -139,7 +139,7 @@
         <line num="397" count="0" type="stmt"/>
         <line num="478" count="0" type="cond" truecount="0" falsecount="2"/>
       </file>
-      <file name="AgentManager.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/AgentManager.jsx">
+      <file name="AgentManager.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/AgentManager.jsx">
         <metrics statements="169" coveredstatements="69" conditionals="127" coveredconditionals="35" methods="55" coveredmethods="19"/>
         <line num="27" count="2" type="stmt"/>
         <line num="28" count="25" type="stmt"/>
@@ -311,7 +311,7 @@
         <line num="805" count="0" type="stmt"/>
         <line num="806" count="0" type="stmt"/>
       </file>
-      <file name="Analytics.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/Analytics.jsx">
+      <file name="Analytics.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/Analytics.jsx">
         <metrics statements="15" coveredstatements="1" conditionals="8" coveredconditionals="0" methods="4" coveredmethods="0"/>
         <line num="15" count="1" type="stmt"/>
         <line num="16" count="0" type="stmt"/>
@@ -329,7 +329,7 @@
         <line num="70" count="0" type="stmt"/>
         <line num="73" count="0" type="stmt"/>
       </file>
-      <file name="AuthContext.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/AuthContext.jsx">
+      <file name="AuthContext.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/AuthContext.jsx">
         <metrics statements="56" coveredstatements="3" conditionals="16" coveredconditionals="0" methods="9" coveredmethods="0"/>
         <line num="4" count="2" type="stmt"/>
         <line num="7" count="2" type="stmt"/>
@@ -388,7 +388,7 @@
         <line num="127" count="0" type="stmt"/>
         <line num="129" count="0" type="stmt"/>
       </file>
-      <file name="CapabilityStore.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/CapabilityStore.jsx">
+      <file name="CapabilityStore.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/CapabilityStore.jsx">
         <metrics statements="22" coveredstatements="1" conditionals="15" coveredconditionals="0" methods="11" coveredmethods="0"/>
         <line num="20" count="1" type="stmt"/>
         <line num="21" count="0" type="stmt"/>
@@ -413,7 +413,7 @@
         <line num="287" count="0" type="stmt"/>
         <line num="298" count="0" type="stmt"/>
       </file>
-      <file name="Dashboard.tsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/Dashboard.tsx">
+      <file name="Dashboard.tsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/Dashboard.tsx">
         <metrics statements="36" coveredstatements="33" conditionals="23" coveredconditionals="18" methods="13" coveredmethods="13"/>
         <line num="17" count="2" type="stmt"/>
         <line num="18" count="13" type="stmt"/>
@@ -452,7 +452,7 @@
         <line num="255" count="1" type="stmt"/>
         <line num="292" count="1" type="stmt"/>
       </file>
-      <file name="DataEngineeringInterface.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/DataEngineeringInterface.jsx">
+      <file name="DataEngineeringInterface.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/DataEngineeringInterface.jsx">
         <metrics statements="255" coveredstatements="56" conditionals="120" coveredconditionals="21" methods="82" coveredmethods="7"/>
         <line num="37" count="1" type="stmt"/>
         <line num="38" count="57" type="stmt"/>
@@ -710,7 +710,7 @@
         <line num="1116" count="0" type="stmt"/>
         <line num="1125" count="0" type="stmt"/>
       </file>
-      <file name="InferenceOrchestrator.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/InferenceOrchestrator.jsx">
+      <file name="InferenceOrchestrator.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/InferenceOrchestrator.jsx">
         <metrics statements="47" coveredstatements="1" conditionals="47" coveredconditionals="0" methods="12" coveredmethods="0"/>
         <line num="23" count="1" type="stmt"/>
         <line num="24" count="0" type="stmt"/>
@@ -760,7 +760,7 @@
         <line num="383" count="0" type="stmt"/>
         <line num="479" count="0" type="stmt"/>
       </file>
-      <file name="InferenceRunner.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/InferenceRunner.jsx">
+      <file name="InferenceRunner.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/InferenceRunner.jsx">
         <metrics statements="36" coveredstatements="0" conditionals="33" coveredconditionals="0" methods="15" coveredmethods="0"/>
         <line num="19" count="0" type="stmt"/>
         <line num="20" count="0" type="stmt"/>
@@ -799,7 +799,7 @@
         <line num="280" count="0" type="stmt"/>
         <line num="333" count="0" type="stmt"/>
       </file>
-      <file name="LoginPage.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/LoginPage.jsx">
+      <file name="LoginPage.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/LoginPage.jsx">
         <metrics statements="66" coveredstatements="1" conditionals="64" coveredconditionals="0" methods="7" coveredmethods="0"/>
         <line num="5" count="2" type="stmt"/>
         <line num="6" count="0" type="stmt"/>
@@ -868,7 +868,7 @@
         <line num="128" count="0" type="stmt"/>
         <line num="131" count="0" type="stmt"/>
       </file>
-      <file name="MCPCapabilityManager.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/MCPCapabilityManager.jsx">
+      <file name="MCPCapabilityManager.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/MCPCapabilityManager.jsx">
         <metrics statements="155" coveredstatements="83" conditionals="110" coveredconditionals="51" methods="63" coveredmethods="25"/>
         <line num="27" count="1" type="stmt"/>
         <line num="28" count="35" type="stmt"/>
@@ -1026,7 +1026,7 @@
         <line num="813" count="1" type="stmt"/>
         <line num="823" count="0" type="stmt"/>
       </file>
-      <file name="NFTManager.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/NFTManager.jsx">
+      <file name="NFTManager.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/NFTManager.jsx">
         <metrics statements="20" coveredstatements="0" conditionals="15" coveredconditionals="0" methods="9" coveredmethods="0"/>
         <line num="14" count="0" type="stmt"/>
         <line num="15" count="0" type="stmt"/>
@@ -1049,7 +1049,7 @@
         <line num="213" count="0" type="stmt"/>
         <line num="249" count="0" type="stmt"/>
       </file>
-      <file name="ProtectedRoute.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/ProtectedRoute.jsx">
+      <file name="ProtectedRoute.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/ProtectedRoute.jsx">
         <metrics statements="10" coveredstatements="1" conditionals="8" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="5" count="2" type="stmt"/>
         <line num="6" count="0" type="stmt"/>
@@ -1062,7 +1062,7 @@
         <line num="28" count="0" type="stmt"/>
         <line num="32" count="0" type="stmt"/>
       </file>
-      <file name="Settings.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/Settings.jsx">
+      <file name="Settings.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/Settings.jsx">
         <metrics statements="109" coveredstatements="1" conditionals="101" coveredconditionals="0" methods="41" coveredmethods="0"/>
         <line num="32" count="1" type="stmt"/>
         <line num="33" count="0" type="stmt"/>
@@ -1174,7 +1174,7 @@
         <line num="738" count="0" type="stmt"/>
         <line num="741" count="0" type="stmt"/>
       </file>
-      <file name="Sidebar.tsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/Sidebar.tsx">
+      <file name="Sidebar.tsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/Sidebar.tsx">
         <metrics statements="19" coveredstatements="0" conditionals="12" coveredconditionals="0" methods="7" coveredmethods="0"/>
         <line num="27" count="0" type="stmt"/>
         <line num="29" count="0" type="stmt"/>
@@ -1196,7 +1196,7 @@
         <line num="97" count="0" type="stmt"/>
         <line num="143" count="0" type="stmt"/>
       </file>
-      <file name="TargetManager.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/TargetManager.jsx">
+      <file name="TargetManager.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/TargetManager.jsx">
         <metrics statements="103" coveredstatements="58" conditionals="67" coveredconditionals="28" methods="36" coveredmethods="17"/>
         <line num="30" count="2" type="stmt"/>
         <line num="31" count="16" type="stmt"/>
@@ -1302,7 +1302,7 @@
         <line num="593" count="1" type="stmt"/>
         <line num="602" count="0" type="stmt"/>
       </file>
-      <file name="UnauthorizedPage.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/UnauthorizedPage.jsx">
+      <file name="UnauthorizedPage.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/UnauthorizedPage.jsx">
         <metrics statements="5" coveredstatements="1" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="0"/>
         <line num="5" count="2" type="stmt"/>
         <line num="6" count="0" type="stmt"/>
@@ -1310,7 +1310,7 @@
         <line num="23" count="0" type="stmt"/>
         <line num="31" count="0" type="stmt"/>
       </file>
-      <file name="UserManagement.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/UserManagement.jsx">
+      <file name="UserManagement.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/UserManagement.jsx">
         <metrics statements="115" coveredstatements="1" conditionals="114" coveredconditionals="0" methods="25" coveredmethods="0"/>
         <line num="18" count="1" type="stmt"/>
         <line num="19" count="0" type="stmt"/>
@@ -1428,7 +1428,7 @@
         <line num="531" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="673" count="0" type="cond" truecount="0" falsecount="2"/>
       </file>
-      <file name="UserProfile.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/UserProfile.jsx">
+      <file name="UserProfile.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/UserProfile.jsx">
         <metrics statements="102" coveredstatements="1" conditionals="80" coveredconditionals="0" methods="12" coveredmethods="0"/>
         <line num="15" count="1" type="stmt"/>
         <line num="16" count="0" type="stmt"/>
@@ -1533,7 +1533,7 @@
         <line num="215" count="0" type="stmt"/>
         <line num="223" count="0" type="stmt"/>
       </file>
-      <file name="WebConnections.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/WebConnections.jsx">
+      <file name="WebConnections.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/WebConnections.jsx">
         <metrics statements="65" coveredstatements="0" conditionals="36" coveredconditionals="0" methods="27" coveredmethods="0"/>
         <line num="23" count="0" type="stmt"/>
         <line num="24" count="0" type="stmt"/>
@@ -1601,7 +1601,7 @@
         <line num="401" count="0" type="stmt"/>
         <line num="504" count="0" type="stmt"/>
       </file>
-      <file name="WebConnectionsManager.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/WebConnectionsManager.jsx">
+      <file name="WebConnectionsManager.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/WebConnectionsManager.jsx">
         <metrics statements="141" coveredstatements="75" conditionals="136" coveredconditionals="72" methods="53" coveredmethods="24"/>
         <line num="25" count="1" type="stmt"/>
         <line num="26" count="27" type="stmt"/>
@@ -1745,7 +1745,7 @@
         <line num="821" count="0" type="stmt"/>
         <line num="830" count="1" type="stmt"/>
       </file>
-      <file name="WorkflowOrchestrator.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/WorkflowOrchestrator.jsx">
+      <file name="WorkflowOrchestrator.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/WorkflowOrchestrator.jsx">
         <metrics statements="107" coveredstatements="1" conditionals="74" coveredconditionals="0" methods="39" coveredmethods="0"/>
         <line num="24" count="2" type="stmt"/>
         <line num="25" count="0" type="stmt"/>
@@ -1858,7 +1858,7 @@
     </package>
     <package name="src.components.analytics">
       <metrics statements="22" coveredstatements="1" conditionals="14" coveredconditionals="0" methods="9" coveredmethods="0"/>
-      <file name="AnalyticsDashboard.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/analytics/AnalyticsDashboard.jsx">
+      <file name="AnalyticsDashboard.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/analytics/AnalyticsDashboard.jsx">
         <metrics statements="22" coveredstatements="1" conditionals="14" coveredconditionals="0" methods="9" coveredmethods="0"/>
         <line num="21" count="1" type="stmt"/>
         <line num="22" count="0" type="stmt"/>
@@ -1886,7 +1886,7 @@
     </package>
     <package name="src.components.modals">
       <metrics statements="1075" coveredstatements="643" conditionals="1245" coveredconditionals="638" methods="318" coveredmethods="175"/>
-      <file name="AdvancedFilterModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/modals/AdvancedFilterModal.jsx">
+      <file name="AdvancedFilterModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/modals/AdvancedFilterModal.jsx">
         <metrics statements="91" coveredstatements="46" conditionals="48" coveredconditionals="25" methods="35" coveredmethods="17"/>
         <line num="13" count="4" type="cond" truecount="0" falsecount="1"/>
         <line num="14" count="80" type="stmt"/>
@@ -1980,7 +1980,7 @@
         <line num="334" count="0" type="stmt"/>
         <line num="335" count="0" type="stmt"/>
       </file>
-      <file name="AgentConfigModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/modals/AgentConfigModal.jsx">
+      <file name="AgentConfigModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/modals/AgentConfigModal.jsx">
         <metrics statements="96" coveredstatements="52" conditionals="132" coveredconditionals="67" methods="26" coveredmethods="11"/>
         <line num="18" count="1" type="stmt"/>
         <line num="19" count="23" type="stmt"/>
@@ -2079,7 +2079,7 @@
         <line num="451" count="0" type="stmt"/>
         <line num="453" count="0" type="stmt"/>
       </file>
-      <file name="AgentCreationModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/modals/AgentCreationModal.jsx">
+      <file name="AgentCreationModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/modals/AgentCreationModal.jsx">
         <metrics statements="88" coveredstatements="54" conditionals="60" coveredconditionals="43" methods="25" coveredmethods="18"/>
         <line num="13" count="1" type="stmt"/>
         <line num="14" count="18" type="stmt"/>
@@ -2170,7 +2170,7 @@
         <line num="371" count="55" type="stmt"/>
         <line num="373" count="1" type="stmt"/>
       </file>
-      <file name="AgentDeploymentModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/modals/AgentDeploymentModal.jsx">
+      <file name="AgentDeploymentModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/modals/AgentDeploymentModal.jsx">
         <metrics statements="77" coveredstatements="53" conditionals="96" coveredconditionals="53" methods="19" coveredmethods="14"/>
         <line num="14" count="1" type="stmt"/>
         <line num="15" count="21" type="stmt"/>
@@ -2250,7 +2250,7 @@
         <line num="445" count="0" type="stmt"/>
         <line num="616" count="0" type="stmt"/>
       </file>
-      <file name="AgentDetailModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/modals/AgentDetailModal.jsx">
+      <file name="AgentDetailModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/modals/AgentDetailModal.jsx">
         <metrics statements="65" coveredstatements="47" conditionals="162" coveredconditionals="63" methods="23" coveredmethods="15"/>
         <line num="24" count="2" type="stmt"/>
         <line num="25" count="16" type="stmt"/>
@@ -2318,7 +2318,7 @@
         <line num="704" count="7" type="stmt"/>
         <line num="738" count="7" type="stmt"/>
       </file>
-      <file name="DataComponentModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/modals/DataComponentModal.jsx">
+      <file name="DataComponentModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/modals/DataComponentModal.jsx">
         <metrics statements="108" coveredstatements="74" conditionals="99" coveredconditionals="74" methods="22" coveredmethods="16"/>
         <line num="16" count="1" type="stmt"/>
         <line num="17" count="32" type="stmt"/>
@@ -2429,7 +2429,7 @@
         <line num="325" count="1" type="stmt"/>
         <line num="378" count="150" type="stmt"/>
       </file>
-      <file name="DataPipelineModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/modals/DataPipelineModal.jsx">
+      <file name="DataPipelineModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/modals/DataPipelineModal.jsx">
         <metrics statements="106" coveredstatements="71" conditionals="118" coveredconditionals="75" methods="45" coveredmethods="31"/>
         <line num="17" count="1" type="stmt"/>
         <line num="18" count="31" type="stmt"/>
@@ -2538,7 +2538,7 @@
         <line num="597" count="0" type="stmt"/>
         <line num="598" count="0" type="stmt"/>
       </file>
-      <file name="MCPCapabilityModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/modals/MCPCapabilityModal.jsx">
+      <file name="MCPCapabilityModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/modals/MCPCapabilityModal.jsx">
         <metrics statements="93" coveredstatements="60" conditionals="81" coveredconditionals="56" methods="18" coveredmethods="12"/>
         <line num="14" count="1" type="stmt"/>
         <line num="15" count="29" type="stmt"/>
@@ -2634,7 +2634,7 @@
         <line num="239" count="25" type="stmt"/>
         <line num="308" count="225" type="stmt"/>
       </file>
-      <file name="MCPServerModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/modals/MCPServerModal.jsx">
+      <file name="MCPServerModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/modals/MCPServerModal.jsx">
         <metrics statements="86" coveredstatements="75" conditionals="94" coveredconditionals="62" methods="18" coveredmethods="15"/>
         <line num="17" count="1" type="stmt"/>
         <line num="18" count="39" type="stmt"/>
@@ -2723,7 +2723,7 @@
         <line num="306" count="0" type="stmt"/>
         <line num="390" count="2" type="stmt"/>
       </file>
-      <file name="TargetSystemModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/modals/TargetSystemModal.jsx">
+      <file name="TargetSystemModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/modals/TargetSystemModal.jsx">
         <metrics statements="113" coveredstatements="83" conditionals="140" coveredconditionals="85" methods="35" coveredmethods="21"/>
         <line num="19" count="2" type="stmt"/>
         <line num="20" count="31" type="stmt"/>
@@ -2839,7 +2839,7 @@
         <line num="479" count="87" type="stmt"/>
         <line num="481" count="0" type="stmt"/>
       </file>
-      <file name="WebConnectionModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/components/modals/WebConnectionModal.jsx">
+      <file name="WebConnectionModal.jsx" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/components/modals/WebConnectionModal.jsx">
         <metrics statements="152" coveredstatements="28" conditionals="215" coveredconditionals="35" methods="52" coveredmethods="5"/>
         <line num="18" count="1" type="stmt"/>
         <line num="19" count="50" type="stmt"/>
@@ -2997,7 +2997,7 @@
     </package>
     <package name="src.utils">
       <metrics statements="216" coveredstatements="33" conditionals="157" coveredconditionals="1" methods="21" coveredmethods="3"/>
-      <file name="api.ts" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts">
+      <file name="api.ts" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts">
         <metrics statements="192" coveredstatements="27" conditionals="153" coveredconditionals="1" methods="19" coveredmethods="2"/>
         <line num="4" count="4" type="cond" truecount="1" falsecount="1"/>
         <line num="39" count="4" type="stmt"/>
@@ -3192,14 +3192,14 @@
         <line num="595" count="0" type="stmt"/>
         <line num="596" count="0" type="stmt"/>
       </file>
-      <file name="imageUrls.js" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/imageUrls.js">
+      <file name="imageUrls.js" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/imageUrls.js">
         <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="6" count="0" type="stmt"/>
         <line num="19" count="0" type="stmt"/>
         <line num="20" count="0" type="stmt"/>
         <line num="21" count="0" type="stmt"/>
       </file>
-      <file name="testAPI.ts" path="/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/testAPI.ts">
+      <file name="testAPI.ts" path="/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/testAPI.ts">
         <metrics statements="20" coveredstatements="6" conditionals="4" coveredconditionals="0" methods="1" coveredmethods="1"/>
         <line num="10" count="2" type="stmt"/>
         <line num="11" count="2" type="stmt"/>

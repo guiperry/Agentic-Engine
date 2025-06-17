@@ -89,8 +89,6 @@ func main() {
 		log.Println("⚠️  Warning: Using default JWT secret. Set JWT_SECRET environment variable in production.")
 	}
 
-	shutdownFromAPIChan := make(chan struct{}, 1) // Channel to signal shutdown from API
-
 	// Create shutdown channel for API server
 	apiShutdownChan := make(chan struct{}, 1)
 
@@ -103,7 +101,7 @@ func main() {
 	// Start API server in background
 	go func() {
 		log.Println("📡 Starting API server on :8080")
-		if err := apiServer.Start(); err != nil {
+		if err := apiServer.Start(); err != nil && err != http.ErrServerClosed {
 			log.Printf("API server error: %v", err)
 		}
 	}()
@@ -150,7 +148,7 @@ func main() {
 	select {
 	case <-sigChan:
 		log.Println("🛑 Received OS signal. Initiating shutdown...")
-	case <-shutdownFromAPIChan:
+	case <-apiShutdownChan:
 		log.Println("🛑 Received shutdown signal from frontend. Initiating shutdown...")
 	}
 

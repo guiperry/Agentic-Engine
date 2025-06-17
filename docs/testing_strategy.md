@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines the testing strategy for the frontend components of the Agentic Inference Engine. The strategy focuses on ensuring the reliability, functionality, and user experience of the high-priority components identified in the frontend implementation plan.
+This document outlines the testing strategy for the frontend components of the Agentic Engine. The strategy focuses on ensuring the reliability, functionality, and user experience of the high-priority components identified in the frontend implementation plan.
 
 ## Testing Levels
 
@@ -107,4 +107,4 @@ Tests are automatically run as part of the CI/CD pipeline to ensure code quality
 
 ## Conclusion
 
-This testing strategy ensures that the frontend components of the Agentic Inference Engine are reliable, functional, and provide a good user experience. By focusing on both unit and integration tests, we can catch issues early and maintain high code quality.
+This testing strategy ensures that the frontend components of the Agentic Engine are reliable, functional, and provide a good user experience. By focusing on both unit and integration tests, we can catch issues early and maintain high code quality.

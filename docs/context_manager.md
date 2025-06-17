@@ -1,6 +1,6 @@
 # Context Manager
 
-The `ContextManager` is a component of the Agentic Inference Engine that handles chunking and processing of large text inputs. It provides a way to process text that exceeds the token limit of the underlying language models by splitting it into manageable chunks, processing each chunk, and then reassembling the results.
+The `ContextManager` is a component of the Agentic Engine that handles chunking and processing of large text inputs. It provides a way to process text that exceeds the token limit of the underlying language models by splitting it into manageable chunks, processing each chunk, and then reassembling the results.
 
 ## Features
 

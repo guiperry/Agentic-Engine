@@ -1,5 +1,5 @@
 [{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/agent/agent_registry.go",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/agent/agent_registry.go",
 	"owner": "_generated_diagnostic_collection_name_#8",
 	"code": {
 		"value": "BrokenImport",
@@ -19,7 +19,7 @@
 	"endLineNumber": 7,
 	"endColumn": 47
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/agent/agent_registry.go",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/agent/agent_registry.go",
 	"owner": "_generated_diagnostic_collection_name_#8",
 	"code": {
 		"value": "UndeclaredImportedName",
@@ -39,7 +39,7 @@
 	"endLineNumber": 19,
 	"endColumn": 25
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/agent/agent_registry.go",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/agent/agent_registry.go",
 	"owner": "_generated_diagnostic_collection_name_#8",
 	"code": {
 		"value": "MissingFieldOrMethod",
@@ -59,7 +59,7 @@
 	"endLineNumber": 59,
 	"endColumn": 27
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/agent/agent_registry.go",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/agent/agent_registry.go",
 	"owner": "_generated_diagnostic_collection_name_#8",
 	"code": {
 		"value": "MissingFieldOrMethod",
@@ -79,7 +79,7 @@
 	"endLineNumber": 70,
 	"endColumn": 30
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/agent/agent_registry.go",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/agent/agent_registry.go",
 	"owner": "_generated_diagnostic_collection_name_#8",
 	"code": {
 		"value": "WrongArgCount",
@@ -99,7 +99,7 @@
 	"endLineNumber": 87,
 	"endColumn": 36
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/agent/agent_registry.go",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/agent/agent_registry.go",
 	"owner": "_generated_diagnostic_collection_name_#8",
 	"code": {
 		"value": "MissingFieldOrMethod",
@@ -119,7 +119,7 @@
 	"endLineNumber": 98,
 	"endColumn": 34
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/agent/agent_registry.go",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/agent/agent_registry.go",
 	"owner": "_generated_diagnostic_collection_name_#8",
 	"code": {
 		"value": "MissingFieldOrMethod",
@@ -139,7 +139,7 @@
 	"endLineNumber": 114,
 	"endColumn": 19
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "eslint",
 	"code": {
 		"value": "@typescript-eslint/no-unused-vars",
@@ -158,7 +158,7 @@
 	"endLineNumber": 39,
 	"endColumn": 42
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -169,7 +169,7 @@
 	"endLineNumber": 62,
 	"endColumn": 42
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -180,7 +180,7 @@
 	"endLineNumber": 63,
 	"endColumn": 40
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -191,7 +191,7 @@
 	"endLineNumber": 64,
 	"endColumn": 46
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -202,7 +202,7 @@
 	"endLineNumber": 65,
 	"endColumn": 46
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -213,7 +213,7 @@
 	"endLineNumber": 66,
 	"endColumn": 34
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -224,7 +224,7 @@
 	"endLineNumber": 96,
 	"endColumn": 40
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -235,7 +235,7 @@
 	"endLineNumber": 97,
 	"endColumn": 38
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -246,7 +246,7 @@
 	"endLineNumber": 98,
 	"endColumn": 44
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -257,7 +257,7 @@
 	"endLineNumber": 99,
 	"endColumn": 44
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -268,7 +268,7 @@
 	"endLineNumber": 100,
 	"endColumn": 32
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -279,7 +279,7 @@
 	"endLineNumber": 151,
 	"endColumn": 40
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -290,7 +290,7 @@
 	"endLineNumber": 152,
 	"endColumn": 38
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -301,7 +301,7 @@
 	"endLineNumber": 153,
 	"endColumn": 44
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -312,7 +312,7 @@
 	"endLineNumber": 154,
 	"endColumn": 44
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -323,7 +323,7 @@
 	"endLineNumber": 155,
 	"endColumn": 32
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -334,7 +334,7 @@
 	"endLineNumber": 177,
 	"endColumn": 65
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -345,7 +345,7 @@
 	"endLineNumber": 178,
 	"endColumn": 63
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -356,7 +356,7 @@
 	"endLineNumber": 179,
 	"endColumn": 69
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -367,7 +367,7 @@
 	"endLineNumber": 180,
 	"endColumn": 69
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -378,7 +378,7 @@
 	"endLineNumber": 181,
 	"endColumn": 57
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -389,7 +389,7 @@
 	"endLineNumber": 215,
 	"endColumn": 47
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -400,7 +400,7 @@
 	"endLineNumber": 216,
 	"endColumn": 45
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -411,7 +411,7 @@
 	"endLineNumber": 217,
 	"endColumn": 51
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -422,7 +422,7 @@
 	"endLineNumber": 218,
 	"endColumn": 51
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "2339",
 	"severity": 8,
@@ -433,7 +433,7 @@
 	"endLineNumber": 219,
 	"endColumn": 39
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "eslint",
 	"code": {
 		"value": "@typescript-eslint/no-explicit-any",
@@ -452,7 +452,7 @@
 	"endLineNumber": 247,
 	"endColumn": 28
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "eslint",
 	"code": {
 		"value": "@typescript-eslint/no-explicit-any",
@@ -471,7 +471,7 @@
 	"endLineNumber": 258,
 	"endColumn": 28
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "eslint",
 	"code": {
 		"value": "@typescript-eslint/no-explicit-any",
@@ -490,7 +490,7 @@
 	"endLineNumber": 259,
 	"endColumn": 30
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "eslint",
 	"code": {
 		"value": "@typescript-eslint/no-explicit-any",
@@ -509,7 +509,7 @@
 	"endLineNumber": 349,
 	"endColumn": 36
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "eslint",
 	"code": {
 		"value": "@typescript-eslint/no-explicit-any",
@@ -528,7 +528,7 @@
 	"endLineNumber": 356,
 	"endColumn": 33
 },{
-	"resource": "/home/gperry/Documents/GitHub/Agentic-Inference-Engine/gui/src/utils/api.ts",
+	"resource": "/home/gperry/Documents/GitHub/Agentic-Engine/gui/src/utils/api.ts",
 	"owner": "typescript",
 	"code": "6133",
 	"severity": 4,

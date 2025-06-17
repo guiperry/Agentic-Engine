@@ -1,4 +1,4 @@
-// API utility functions for the Agentic Inference Engine
+// API utility functions for the Agentic Engine
 
 // Base API URL - adjust based on environment
 const API_BASE_URL = process.env.NODE_ENV === 'production' 

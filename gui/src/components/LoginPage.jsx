@@ -139,7 +139,7 @@ const LoginPage = ({ onLogin }) => {
                 <Brain className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-bold text-white">Agentic Inference Engine</h1>
+                <h1 className="text-xl font-bold text-white">Agentic Engine</h1>
                 <p className="text-sm text-slate-400">NFT-Agent Platform</p>
               </div>
             </div>

@@ -1,8 +1,8 @@
-# Agentic Inference Engine
+# Agentic Engine
 
 ## Overview
 
-The Agentic Inference Engine is a comprehensive platform for designing, deploying, and managing autonomous AI agents in an easy to use no-code interface. Built with a powerful Go backend and a modern React-based user interface, it empowers users to define complex goals, equip agents with diverse capabilities, and orchestrate their operations to achieve sophisticated outcomes. The engine supports multiple AI language models (including Cerebras, Gemini, and DeepSeek) to drive intelligent decision-making and task execution.
+The Agentic Engine is a comprehensive platform for designing, deploying, and managing autonomous AI agents in an easy to use no-code interface. Built with a powerful Go backend and a modern React-based user interface, it empowers users to define complex goals, equip agents with diverse capabilities, and orchestrate their operations to achieve sophisticated outcomes. The engine supports multiple AI language models (including Cerebras, Gemini, and DeepSeek) to drive intelligent decision-making and task execution.
 
 ## Features
 
@@ -39,7 +39,7 @@ The Agentic Inference Engine is a comprehensive platform for designing, deployin
 
 ## Architecture
 
-The Agentic Inference Engine employs a client-server architecture:
+The Agentic Engine employs a client-server architecture:
 *   **Backend:** Developed in Go, responsible for agent logic, AI model interaction, task orchestration, and API services.
 *   **Frontend:** A single-page application (SPA) built with React and TypeScript, providing a rich user interface for interacting with the engine.
 

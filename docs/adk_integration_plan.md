@@ -1264,10 +1264,10 @@ We've already embedded the Python code as a string constant in the `python_servi
 #### Makefile for Cross-Compilation
 
 ```makefile
-# Makefile for cross-compiling the Inference Engine
+# Makefile for cross-compiling the Agentic Engine
 
 # Binary name
-BINARY_NAME=inference-engine
+BINARY_NAME=agentic-engine
 
 # Build directory
 BUILD_DIR=bin
@@ -1322,7 +1322,7 @@ deps:
 # cross-compile.sh - Script for cross-compiling the Inference Engine
 
 # Binary name
-BINARY_NAME="inference-engine"
+BINARY_NAME="agentic-engine"
 
 # Build directory
 BUILD_DIR="bin"
